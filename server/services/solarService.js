@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { classifyApiError } from '../utils/classifyError.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,7 +18,7 @@ async function loadPrompt(input_mode, age_group) {
   const file =
     input_mode === 'child'
       ? 'story_child.txt'
-      : `story_parent_${age_group}.txt`;
+      : `story_parent_${age_group.replace(/-/g, '_')}.txt`;
   const filePath = path.join(__dirname, '../prompts', file);
   return fs.readFile(filePath, 'utf-8');
 }
@@ -43,15 +44,22 @@ export async function generateStory(input) {
 그림 스타일: ${art_style}
 페이지 수: ${pages}컷`;
 
-  const response = await solar.chat.completions.create({
-    model: 'solar-pro',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ],
-    response_format: { type: 'json_object' },
-  });
+  try {
+    const response = await solar.chat.completions.create({
+      model: 'solar-pro',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      response_format: { type: 'json_object' },
+    });
 
-  const result = JSON.parse(response.choices[0].message.content);
-  return result;
+    const result = JSON.parse(response.choices[0].message.content);
+    return result;
+  } catch (err) {
+    const classified = classifyApiError(err);
+    const error = new Error(classified.error_message);
+    error.error_code = classified.error_code;
+    throw error;
+  }
 }

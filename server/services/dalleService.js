@@ -2,6 +2,7 @@ import 'dotenv/config';
 import OpenAI from 'openai';
 import supabase from '../db/supabase.js';
 import { uploadImageFromBase64 } from '../utils/storage.js';
+import { classifyApiError } from '../utils/classifyError.js';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -12,8 +13,34 @@ const styleMap = {
   animation: 'vibrant animation style',
 };
 
-async function buildImagePrompt(text_ko, art_style) {
+function buildCharacterDesc(c) {
+  const parts = [
+    c.age_appearance,
+    `${c.hair}`,
+    `${c.eyes}`,
+    `${c.skin} skin`,
+    `wearing ${c.outfit}`,
+  ];
+  if (c.features) parts.push(c.features);
+  return parts.join(', ');
+}
+
+function buildCharacterContext(character, sub_characters = [], characters_in_scene = []) {
+  const main = `Main character: ${buildCharacterDesc(character)}`;
+  if (!sub_characters.length) return main;
+
+  const appearing = characters_in_scene.length
+    ? sub_characters.filter(s => characters_in_scene.includes(s.name))
+    : sub_characters;
+
+  if (!appearing.length) return main;
+  const subs = appearing.map(s => `${s.name}: ${buildCharacterDesc(s)}`).join('. ');
+  return `${main}. Supporting characters — ${subs}`;
+}
+
+async function buildImagePrompt(text_ko, art_style, character, sub_characters, characters_in_scene) {
   const style = styleMap[art_style] ?? 'soft watercolor style';
+  const characterContext = buildCharacterContext(character, sub_characters, characters_in_scene);
 
   const res = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
@@ -28,50 +55,67 @@ async function buildImagePrompt(text_ko, art_style) {
   });
 
   const scene = res.choices[0].message.content.trim();
-  return `${scene}, ${style}, children's book illustration, no text`;
+  return `${characterContext}. Scene: ${scene}, ${style}, children's book illustration, no text`;
 }
 
-export async function generateAndSaveImage(page_id, story_id, text_ko, art_style) {
-  const prompt = await buildImagePrompt(text_ko, art_style);
+export async function generateCoverImage(story_id, title, art_style, character) {
+  try {
+    const style = styleMap[art_style] ?? 'soft watercolor style';
+    const characterDesc = buildCharacterDesc(character);
+    const prompt = `Children's book cover illustration. Title theme: "${title}". Main character: ${characterDesc}. Warm and inviting composition, centered character, ${style}, no text, no words`;
 
-  const response = await openai.images.generate({
-    model: 'gpt-image-1',
-    prompt,
-    n: 1,
-    size: '1024x1024',
-  });
+    const response = await openai.images.generate({
+      model: 'gpt-image-1',
+      prompt,
+      n: 1,
+      size: '1024x1024',
+    });
 
-  const b64 = response.data[0].b64_json;
-  const filePath = `${story_id}/${page_id}.png`;
-  const publicUrl = await uploadImageFromBase64(b64, filePath);
+    const b64 = response.data[0].b64_json;
+    const filePath = `${story_id}/cover.png`;
+    const publicUrl = await uploadImageFromBase64(b64, filePath);
 
-  await supabase
-    .from('pages')
-    .update({ image_url: publicUrl })
-    .eq('id', page_id);
+    await supabase
+      .from('stories')
+      .update({ cover_url: publicUrl })
+      .eq('id', story_id);
 
-  return publicUrl;
+    return publicUrl;
+  } catch (err) {
+    if (err.error_code) throw err;
+    const classified = classifyApiError(err);
+    const error = new Error(classified.error_message);
+    error.error_code = classified.error_code;
+    throw error;
+  }
 }
 
-export async function generateImagesForStory(story_id) {
-  const { data: story } = await supabase
-    .from('stories')
-    .select('art_style')
-    .eq('id', story_id)
-    .single();
+export async function generateAndSaveImage(page_id, story_id, text_ko, art_style, character, sub_characters = [], characters_in_scene = []) {
+  try {
+    const prompt = await buildImagePrompt(text_ko, art_style, character, sub_characters, characters_in_scene);
 
-  const { data: pages, error } = await supabase
-    .from('pages')
-    .select('id, text_ko')
-    .eq('story_id', story_id)
-    .order('page_number');
+    const response = await openai.images.generate({
+      model: 'gpt-image-1',
+      prompt,
+      n: 1,
+      size: '1024x1024',
+    });
 
-  if (error) throw new Error(error.message);
+    const b64 = response.data[0].b64_json;
+    const filePath = `${story_id}/${page_id}.png`;
+    const publicUrl = await uploadImageFromBase64(b64, filePath);
 
-  // 컷별 병렬 생성
-  const results = await Promise.all(
-    pages.map(p => generateAndSaveImage(p.id, story_id, p.text_ko, story.art_style))
-  );
+    await supabase
+      .from('pages')
+      .update({ image_url: publicUrl })
+      .eq('id', page_id);
 
-  return results;
+    return publicUrl;
+  } catch (err) {
+    if (err.error_code) throw err;
+    const classified = classifyApiError(err);
+    const error = new Error(classified.error_message);
+    error.error_code = classified.error_code;
+    throw error;
+  }
 }

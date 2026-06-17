@@ -1,7 +1,7 @@
 const jobs = new Map();
 
 export function createJob(job_id, data) {
-  jobs.set(job_id, { status: 'pending', ...data, created_at: Date.now() });
+  jobs.set(job_id, { status: 'pending', regenerate_count: 0, ...data, created_at: Date.now() });
 }
 
 export function updateJob(job_id, data) {

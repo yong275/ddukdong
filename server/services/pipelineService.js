@@ -1,5 +1,5 @@
 import { generateStory } from './solarService.js';
-import { generateAndSaveImage } from './dalleService.js';
+import { generateAndSaveImage, generateCoverImage } from './dalleService.js';
 import { createJob, updateJob, getJob } from '../utils/jobStore.js';
 import supabase from '../db/supabase.js';
 import { randomUUID } from 'crypto';
@@ -8,12 +8,25 @@ export async function startGeneratePipeline(job_id, input) {
   try {
     updateJob(job_id, { status: 'pending' });
 
-    // 1. Solar API → 스토리 생성
     const story = await generateStory(input);
     updateJob(job_id, { status: 'story_done', story, input });
   } catch (err) {
-    updateJob(job_id, { status: 'failed', error: err.message });
+    updateJob(job_id, { status: 'failed', error_code: err.error_code ?? 'UNKNOWN', error: err.message });
   }
+}
+
+export async function regenerateStory(job_id) {
+  const job = getJob(job_id);
+  if (!job) throw new Error('job을 찾을 수 없습니다.');
+
+  if (job.regenerate_count >= 3) {
+    const err = new Error('재생성은 최대 3회까지 가능합니다.');
+    err.status = 429;
+    throw err;
+  }
+
+  updateJob(job_id, { status: 'pending', regenerate_count: job.regenerate_count + 1, story: null });
+  startGeneratePipeline(job_id, job.input);
 }
 
 export async function confirmStory(job_id) {
@@ -21,7 +34,6 @@ export async function confirmStory(job_id) {
   const { story, input } = job ?? {};
   if (!story) throw new Error('job을 찾을 수 없습니다.');
 
-  // 2. DB에 stories 저장
   const story_id = randomUUID();
   const { error: storyError } = await supabase.from('stories').insert({
     id: story_id,
@@ -29,17 +41,17 @@ export async function confirmStory(job_id) {
     input_mode: input.input_mode,
     character_name: input.character_name,
     character_gender: input.character_gender,
-    sub_characters: input.sub_characters ?? [],
+    sub_characters: story.sub_characters ?? [],
     age_group: input.age_group ?? null,
     background: input.background,
     situation: input.situation,
     moral: input.moral ?? null,
     art_style: input.art_style,
+    character_description: story.character ?? null,
     status: 'story_done',
   });
   if (storyError) throw new Error(storyError.message);
 
-  // 3. DB에 pages 저장
   const pageRows = story.pages.map((p, i) => ({
     story_id,
     page_number: i + 1,
@@ -51,24 +63,27 @@ export async function confirmStory(job_id) {
     .select('id, page_number, text_ko');
   if (pagesError) throw new Error(pagesError.message);
 
-  // 4. 이미지 생성 (백그라운드)
-  generateImages(story_id, savedPages, story.pages, input.art_style);
+  generateImages(story_id, story.title, savedPages, story.pages, input.art_style, story.character, story.sub_characters ?? []);
 
   return story_id;
 }
 
-async function generateImages(story_id, savedPages, storyPages, art_style) {
+async function generateImages(story_id, title, savedPages, storyPages, art_style, character, sub_characters) {
   try {
     await supabase.from('stories').update({ status: 'image_done' }).eq('id', story_id);
 
-    await Promise.all(
-      savedPages.map((p, i) =>
-        generateAndSaveImage(p.id, story_id, storyPages[i].text, art_style)
-      )
-    );
+    await Promise.all([
+      generateCoverImage(story_id, title, art_style, character),
+      ...savedPages.map((p, i) =>
+        generateAndSaveImage(p.id, story_id, storyPages[i].text, art_style, character, sub_characters, storyPages[i].characters ?? [])
+      ),
+    ]);
 
     await supabase.from('stories').update({ status: 'completed' }).eq('id', story_id);
-  } catch {
-    await supabase.from('stories').update({ status: 'failed' }).eq('id', story_id);
+  } catch (err) {
+    await supabase.from('stories').update({
+      status: 'failed',
+      error_code: err.error_code ?? 'UNKNOWN',
+    }).eq('id', story_id);
   }
 }
