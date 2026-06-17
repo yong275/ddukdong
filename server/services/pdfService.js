@@ -9,14 +9,17 @@ const FONT_PATH = path.join(__dirname, '../fonts/NotoSansKR.ttf');
 const PAGE_W = 816;
 const PAGE_H = 612;
 
-// 좌측 이미지 영역
-const IMG_X = 0;
-const IMG_Y = 0;
-const IMG_W = PAGE_W / 2;   // 페이지의 50%
+// 이미지 영역 (좌측, 여백 포함)
+const IMG_MARGIN = 20;
+const IMG_AREA_W = PAGE_W / 2;
+const IMG_W = IMG_AREA_W - IMG_MARGIN * 2;
+const IMG_H = IMG_W;
+const IMG_X = IMG_MARGIN;
+const IMG_Y = (PAGE_H - IMG_H) / 2; // 세로 중앙
 
 // 우측 텍스트 영역
 const TEXT_GAP = 20;
-const TEXT_X = IMG_W + TEXT_GAP;
+const TEXT_X = IMG_AREA_W + TEXT_GAP;
 const TEXT_W = PAGE_W / 2 - TEXT_GAP * 2;
 const TEXT_FONT_SIZE = 18;
 
@@ -71,9 +74,7 @@ export async function generateStoryPdf(story_id) {
 
     if (page.image_url) {
       const imgBuf = await fetchImageBuffer(page.image_url);
-      const imgRenderedH = IMG_W * (1024 / 1024); // 1:1 비율 유지
-      const imgY = (PAGE_H - imgRenderedH) / 2;   // 세로 중앙
-      doc.image(imgBuf, IMG_X, imgY, { width: IMG_W, height: imgRenderedH });
+      doc.image(imgBuf, IMG_X, IMG_Y, { width: IMG_W, height: IMG_H });
     }
 
     if (page.text_ko) {
