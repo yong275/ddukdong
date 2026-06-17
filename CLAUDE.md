@@ -9,7 +9,7 @@ AI 기반 개인 맞춤형 동화 생성 서비스.
 ## 폴더 구조
 
 ```
-ddukddak/
+ddukdong/
 ├── CLAUDE.md
 ├── .gitignore
 ├── .env                        # 프론트 환경변수 (Vite가 읽음)
