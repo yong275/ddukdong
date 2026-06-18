@@ -1,8 +1,13 @@
 import 'dotenv/config';
 import OpenAI from 'openai';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import supabase from '../db/supabase.js';
 import { uploadImageFromBase64 } from '../utils/storage.js';
 import { classifyApiError } from '../utils/classifyError.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -12,6 +17,8 @@ const styleMap = {
   fairytale: 'classic fairytale illustration',
   animation: 'vibrant animation style',
 };
+
+const AGE_MIDPOINT = { '4-6': '5', '7-9': '8', '10-12': '11' };
 
 function buildCharacterDesc(c) {
   const parts = [
@@ -25,37 +32,44 @@ function buildCharacterDesc(c) {
   return parts.join(', ');
 }
 
-function buildCharacterContext(character, sub_characters = [], characters_in_scene = []) {
-  const main = `Main character: ${buildCharacterDesc(character)}`;
-  if (!sub_characters.length) return main;
-
-  const appearing = characters_in_scene.length
-    ? sub_characters.filter(s => characters_in_scene.includes(s.name))
-    : sub_characters;
-
-  if (!appearing.length) return main;
-  const subs = appearing.map(s => `${s.name}: ${buildCharacterDesc(s)}`).join('. ');
-  return `${main}. Supporting characters — ${subs}`;
+async function loadImagePrompt(input_mode, age_group) {
+  const ageKey = age_group.replace(/-/g, '_');
+  const file = `image_${input_mode}_${ageKey}.txt`;
+  return fs.readFile(path.join(__dirname, '../prompts', file), 'utf-8');
 }
 
-async function buildImagePrompt(text_ko, art_style, character, sub_characters, characters_in_scene) {
-  const style = styleMap[art_style] ?? 'soft watercolor style';
-  const characterContext = buildCharacterContext(character, sub_characters, characters_in_scene);
+function fillImageTemplate(template, input, storyPages) {
+  return template
+    .replace(/{character_name}/g, input.character_name ?? '')
+    .replace(/{age}/g, AGE_MIDPOINT[input.age_group] ?? input.age_group ?? '')
+    .replace(/{gender}/g, input.character_gender ?? '')
+    .replace(/{art_style}/g, input.art_style ?? '')
+    .replace(/{setting}/g, input.background ?? '')
+    .replace(/{story_pages}/g, JSON.stringify(storyPages));
+}
 
-  const res = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      {
-        role: 'system',
-        content:
-          "Convert the Korean children's story text into a concise English image scene description (1-2 sentences). Focus on visual elements only. No text in the image.",
-      },
-      { role: 'user', content: text_ko },
-    ],
-  });
+export async function generateAllImagePrompts(story, input) {
+  const template = await loadImagePrompt(input.input_mode, input.age_group);
+  const storyPages = story.pages.map((p, i) => ({ page_number: i + 1, text: p.text }));
+  const systemPrompt = fillImageTemplate(template, input, storyPages);
 
-  const scene = res.choices[0].message.content.trim();
-  return `${characterContext}. Scene: ${scene}, ${style}, children's book illustration, no text`;
+  try {
+    const res = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: '위 동화 내용을 바탕으로 각 페이지의 이미지 프롬프트를 JSON으로 생성해줘.' },
+      ],
+      response_format: { type: 'json_object' },
+    });
+    const result = JSON.parse(res.choices[0].message.content);
+    return result.pages; // [{ page_number, image_prompt }]
+  } catch (err) {
+    const classified = classifyApiError(err);
+    const error = new Error(classified.error_message);
+    error.error_code = classified.error_code;
+    throw error;
+  }
 }
 
 export async function generateCoverImage(story_id, title, art_style, character) {
@@ -90,13 +104,11 @@ export async function generateCoverImage(story_id, title, art_style, character) 
   }
 }
 
-export async function generateAndSaveImage(page_id, story_id, text_ko, art_style, character, sub_characters = [], characters_in_scene = []) {
+export async function generateAndSaveImage(page_id, story_id, imagePrompt) {
   try {
-    const prompt = await buildImagePrompt(text_ko, art_style, character, sub_characters, characters_in_scene);
-
     const response = await openai.images.generate({
       model: 'gpt-image-1',
-      prompt,
+      prompt: imagePrompt,
       n: 1,
       size: '1024x1024',
     });
