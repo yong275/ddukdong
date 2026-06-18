@@ -9,11 +9,12 @@ import supabase from '../db/supabase.js';
 const router = Router();
 
 // POST /v1/stories/generate
-router.post('/generate', requireAuth, async (req, res, next) => {
+router.post('/generate', async (req, res, next) => {
   try {
     const job_id = randomUUID();
-    createJob(job_id, { status: 'pending', user_id: req.user.id });
-    startGeneratePipeline(job_id, req.body, req.user.id);
+    const user_id = req.user?.id ?? null;
+    createJob(job_id, { status: 'pending', user_id });
+    startGeneratePipeline(job_id, req.body, user_id);
     res.status(202).json({ job_id });
   } catch (err) {
     next(err);

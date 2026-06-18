@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MagicWand, WarningCircle } from '@phosphor-icons/react';
 import axios from 'axios';
@@ -20,7 +20,7 @@ const ART_PALETTE = {
 
 /* ── 커버 미리보기 ─────────────────────────────── */
 function CoverPreview({ store }) {
-  const { chars, artStyle, background } = store;
+  const { chars, artStyle, setting } = store;
   const main = chars[0] || {};
   const bg = ART_PALETTE[artStyle] || '#fff8de';
 
@@ -45,7 +45,7 @@ function CoverPreview({ store }) {
         {main.name ? `${main.name}의 이야기` : '나의 동화'}
       </div>
       <div style={{ fontSize: 13, color: '#5c4033', opacity: .7, textAlign: 'center' }}>
-        {background || ''} {artStyle ? `· ${ART_STYLE_LABELS[artStyle]}` : ''}
+        {setting || ''} {artStyle ? `· ${ART_STYLE_LABELS[artStyle]}` : ''}
       </div>
     </div>
   );
@@ -59,7 +59,7 @@ export default function StoryCheckPage() {
   const [error, setError] = useState('');
 
   const {
-    input_mode, chars, age, background,
+    input_mode, chars, age, setting,
     situation, moral, artStyle,
   } = store;
 
@@ -74,9 +74,9 @@ export default function StoryCheckPage() {
         input_mode: input_mode,
         character_name: main.name,
         character_gender: main.gender,
-        sub_chars: sub.map(c => ({ name: c.name, gender: c.gender })),
+        sub_characters: sub.map(c => ({ name: c.name, gender: c.gender })),
         age_group: age,
-        background,
+        background: setting,
         situation,
         moral: input_mode === 'parent' ? moral : '',
         art_style: artStyle,
@@ -100,7 +100,7 @@ export default function StoryCheckPage() {
   const rows = [
     { k: '등장인물', v: main.name ? `${main.name} (${main.gender === 'female' ? '여자' : '남자'})${subCharText ? ', ' + subCharText : ''}` : '미입력' },
     { k: '나이대', v: age || '미선택' },
-    { k: '배경', v: background || '미선택' },
+    { k: '배경', v: setting || '미선택' },
     { k: '상황', v: situation || '미입력' },
     ...(input_mode === 'parent' ? [{ k: '교훈', v: moral || '미입력' }] : []),
     { k: '그림체', v: ART_STYLE_LABELS[artStyle] || '미선택' },
