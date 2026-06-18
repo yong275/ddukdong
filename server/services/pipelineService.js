@@ -63,14 +63,15 @@ export async function confirmStory(job_id) {
     .select('id, page_number, text_ko');
   if (pagesError) throw new Error(pagesError.message);
 
-  generateImages(story_id, story.title, savedPages, story.pages, input.art_style, story.character, story.sub_characters ?? []);
+  generateImages(job_id, story_id, story.title, savedPages, story.pages, input.art_style, story.character, story.sub_characters ?? []);
 
   return story_id;
 }
 
-async function generateImages(story_id, title, savedPages, storyPages, art_style, character, sub_characters) {
+async function generateImages(job_id, story_id, title, savedPages, storyPages, art_style, character, sub_characters) {
   try {
     await supabase.from('stories').update({ status: 'image_done' }).eq('id', story_id);
+    updateJob(job_id, { status: 'image_done' });
 
     await Promise.all([
       generateCoverImage(story_id, title, art_style, character),
@@ -80,10 +81,11 @@ async function generateImages(story_id, title, savedPages, storyPages, art_style
     ]);
 
     await supabase.from('stories').update({ status: 'completed' }).eq('id', story_id);
+    updateJob(job_id, { status: 'completed', story_id });
   } catch (err) {
-    await supabase.from('stories').update({
-      status: 'failed',
-      error_code: err.error_code ?? 'UNKNOWN',
-    }).eq('id', story_id);
+    const error_code = err.error_code ?? 'UNKNOWN';
+    const error_message = err.message ?? '알 수 없는 오류가 발생했습니다.';
+    await supabase.from('stories').update({ status: 'failed', error_code }).eq('id', story_id);
+    updateJob(job_id, { status: 'failed', error_code, error_message });
   }
 }
