@@ -12,7 +12,13 @@ const router = Router();
 router.post('/generate', async (req, res, next) => {
   try {
     const job_id = randomUUID();
-    const user_id = req.user?.id ?? null;
+    // 토큰 있으면 user_id 추출
+    let user_id = null;
+    const header = req.headers.authorization;
+    if (header?.startsWith('Bearer ')) {
+      const { data: { user } } = await supabase.auth.getUser(header.slice(7));
+      if (user) user_id = user.id;
+    }
     createJob(job_id, { status: 'pending', user_id });
     startGeneratePipeline(job_id, req.body, user_id);
     res.status(202).json({ job_id });
@@ -66,13 +72,12 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /v1/stories/:story_id — 동화 상세 (pages 포함)
-router.get('/:story_id', requireAuth, async (req, res, next) => {
+router.get('/:story_id', async (req, res, next) => {
   try {
     const { data: story, error: se } = await supabase
       .from('stories')
       .select('*')
       .eq('id', req.params.story_id)
-      .eq('user_id', req.user.id)
       .single();
 
     if (se || !story) return res.status(404).json({ error: '동화를 찾을 수 없습니다.' });
