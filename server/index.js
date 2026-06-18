@@ -8,13 +8,15 @@ import translateRouter from './routes/translate.js';
 import shareRouter from './routes/share.js';
 
 const app = express();
-app.use(cors({
+const corsOptions = {
   origin: [
     'http://localhost:5173',
     'https://yong275.github.io',
   ],
   credentials: true,
-}));
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 app.use('/v1/auth', authRouter);
