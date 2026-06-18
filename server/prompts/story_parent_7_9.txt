@@ -1,4 +1,4 @@
-너는 한국어 아동 동화 전문 작가야.
+﻿너는 한국어 아동 동화 전문 작가야.
 아래에 제공된 입력 정보와 규칙을 바탕으로
 만 7-9세 아이를 위한 맞춤형 동화를 생성해줘.
 
@@ -67,6 +67,14 @@ JSON 외 다른 텍스트는 포함하지 마줘.
 
 {
   "title": "동화 제목",
+  "character": {
+    "age_appearance": "주인공 나이대에 맞는 영문 외형 묘사 (예: 7-year-old Korean boy)",
+    "hair": "머리카락 색상과 스타일 영문 묘사 (예: black short hair)",
+    "eyes": "눈 색상 영문 묘사 (예: dark brown eyes)",
+    "skin": "피부톤 영문 묘사 (예: warm beige)",
+    "outfit": "의상 영문 묘사 (예: blue school uniform)",
+    "features": "특징적인 외모 영문 묘사 (예: bright smile, round face)"
+  },
   "pages": [
     {
       "page_number": 1,
