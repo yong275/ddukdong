@@ -21,15 +21,16 @@ const styleMap = {
 const AGE_MIDPOINT = { '4-6': '5', '7-9': '8', '10-12': '11' };
 
 function buildCharacterDesc(c) {
+  if (!c) return 'A Korean child, friendly appearance';
   const parts = [
     c.age_appearance,
-    `${c.hair}`,
-    `${c.eyes}`,
-    `${c.skin} skin`,
-    `wearing ${c.outfit}`,
-  ];
+    c.hair,
+    c.eyes,
+    c.skin ? `${c.skin} skin` : null,
+    c.outfit ? `wearing ${c.outfit}` : null,
+  ].filter(Boolean);
   if (c.features) parts.push(c.features);
-  return parts.join(', ');
+  return parts.length ? parts.join(', ') : 'A Korean child, friendly appearance';
 }
 
 async function loadImagePrompt(input_mode, age_group) {
