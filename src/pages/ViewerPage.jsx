@@ -1,10 +1,11 @@
-﻿import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, CaretLeft, CaretRight,
   Translate, SpinnerGap, WarningCircle,
 } from '@phosphor-icons/react';
 import axios from 'axios';
+import { SAMPLE_BOOKS } from '../utils/constants';
 
 /* ── 배경 팔레트 ────────────────────────────── */
 const ART_PALETTE = {
@@ -108,6 +109,15 @@ export default function ViewerPage() {
   /* 데이터 fetch */
   useEffect(() => {
     const fetchStory = async () => {
+      if (story_id?.startsWith('s')) {
+        const sample = SAMPLE_BOOKS.find(b => b.id === story_id);
+        if (sample) {
+          setStory(sample);
+          setPages((sample.pages || []).slice().sort((a, b) => a.page_number - b.page_number));
+          setLoading(false);
+          return;
+        }
+      }
       setLoading(true);
       setError('');
       try {

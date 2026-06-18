@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import { loadConfig } from './utils/loadConfig.js';
 import authRouter from './routes/auth.js';
 import storiesRouter from './routes/stories.js';
@@ -7,6 +8,13 @@ import translateRouter from './routes/translate.js';
 import shareRouter from './routes/share.js';
 
 const app = express();
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://yong275.github.io',
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use('/v1/auth', authRouter);

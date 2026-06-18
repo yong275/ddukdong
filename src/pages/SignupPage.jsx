@@ -1,5 +1,6 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signup } from '../api/auth.js';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -10,24 +11,34 @@ export default function SignupPage() {
     passwordConfirm: '',
     agreed: false,
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (form.password !== form.passwordConfirm) {
-      alert('비밀번호가 일치하지 않아요.');
+      setError('비밀번호가 일치하지 않아요.');
       return;
     }
     if (!form.agreed) {
-      alert('이용약관에 동의해주세요.');
+      setError('이용약관에 동의해주세요.');
       return;
     }
-    // TODO: Supabase auth 연결
-    alert('회원가입 기능은 추후 연결 예정입니다.');
+    setError('');
+    setLoading(true);
+    try {
+      await signup({ email: form.email, nickname: form.guardianName, password: form.password });
+      navigate('/login');
+    } catch (err) {
+      setError(err.response?.data?.error || '회원가입에 실패했어요.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   const inputStyle = {
@@ -56,7 +67,7 @@ export default function SignupPage() {
           {/* 마스코트 */}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <img
-              src="/assets/mascot-light.png"
+              src={`${import.meta.env.BASE_URL}assets/mascot-light.png`}
               alt="뚝딱 마스코트"
               style={{ width: 80, height: 'auto', marginBottom: 8 }}
             />
@@ -180,9 +191,17 @@ export default function SignupPage() {
               </span>
             </label>
 
+            {/* 에러 메시지 */}
+            {error && (
+              <p style={{ color: '#e55', fontSize: 'var(--fs-sm)', marginBottom: 12, textAlign: 'center' }}>
+                {error}
+              </p>
+            )}
+
             {/* 가입 버튼 */}
             <button
               type="submit"
+              disabled={loading}
               style={{
                 width: '100%', padding: '14px',
                 background: 'var(--primary)', color: 'var(--text-on-primary)',

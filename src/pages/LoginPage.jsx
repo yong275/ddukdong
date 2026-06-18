@@ -1,20 +1,37 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login, loginWithGoogle } from '../api/auth.js';
+import useAuthStore from '../store/authStore.js';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const setUser = useAuthStore(s => s.setUser);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
-    // TODO: Supabase auth 연결
-    navigate('/');
+    setError('');
+    setLoading(true);
+    try {
+      const { token, user } = await login({ email, password });
+      setUser({ ...user, token });
+      navigate('/');
+    } catch (err) {
+      setError(err.response?.data?.error || '로그인에 실패했어요.');
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleGoogle() {
-    // TODO: Supabase Google OAuth 연결
-    navigate('/');
+  async function handleGoogle() {
+    try {
+      await loginWithGoogle();
+    } catch {
+      setError('구글 로그인에 실패했어요.');
+    }
   }
 
   return (
@@ -30,7 +47,7 @@ export default function LoginPage() {
           {/* 마스코트 + 타이틀 */}
           <div style={{ textAlign: 'center', marginBottom: 36 }}>
             <img
-              src="/assets/mascot-light.png"
+              src={`${import.meta.env.BASE_URL}assets/mascot-light.png`}
               alt="뚝딱 마스코트"
               style={{ width: 96, height: 'auto', marginBottom: 12 }}
             />
@@ -100,9 +117,17 @@ export default function LoginPage() {
               />
             </div>
 
+            {/* 에러 메시지 */}
+            {error && (
+              <p style={{ color: '#e55', fontSize: 'var(--fs-sm)', marginBottom: 12, textAlign: 'center' }}>
+                {error}
+              </p>
+            )}
+
             {/* 로그인 버튼 */}
             <button
               type="submit"
+              disabled={loading}
               style={{
                 width: '100%', padding: '14px',
                 background: 'var(--primary)', color: 'var(--text-on-primary)',

@@ -1,9 +1,10 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Sparkle, UserCirclePlus, SlidersHorizontal, PaintBrushBroad } from '@phosphor-icons/react';
 
 import Footer from '../components/layout/Footer';
 import Badge from '../components/common/Badge';
 import Illo from '../components/illustrations/Illo';
+import { SAMPLE_BOOKS } from '../utils/constants';
 
 const FEATURES = [
   {
@@ -23,20 +24,12 @@ const FEATURES = [
   },
 ];
 
-const SAMPLES = [
-  { id: 1, illoName: 'forest' },
-  { id: 2, illoName: 'stars' },
-  { id: 3, illoName: 'ocean' },
-  { id: 4, illoName: 'castle' },
-  { id: 5, illoName: 'forest' },
-];
+
 
 export default function MainPage() {
   const navigate = useNavigate();
 
-  function handleSample() {
-    alert('샘플 동화 — 로그인 후 직접 만들어보세요!');
-  }
+
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -90,7 +83,7 @@ export default function MainPage() {
           {/* Right — mascot */}
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <img
-              src="/assets/mascot-light.png"
+              src={`${import.meta.env.BASE_URL}assets/mascot-light.png`}
               alt="뚝딱 마스코트"
               className="mascot"
               style={{ width: 210, height: 'auto' }}
@@ -131,10 +124,10 @@ export default function MainPage() {
           로그인하면 직접 만들어볼 수 있어요
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
-          {SAMPLES.map(s => (
+          {SAMPLE_BOOKS.map(s => (
             <div
               key={s.id}
-              onClick={handleSample}
+              onClick={() => navigate(/viewer/+s.id)}
               style={{
                 background: 'var(--surface)', borderRadius: 'var(--radius-card)',
                 border: 'var(--bw) solid var(--border)', overflow: 'hidden',
@@ -145,7 +138,7 @@ export default function MainPage() {
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; }}
             >
               <div style={{ aspectRatio: '3/4', padding: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <Illo name={s.illoName} />
+                <Illo name={s.illo} />
               </div>
             </div>
           ))}
