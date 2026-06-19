@@ -1,7 +1,7 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowClockwise, WarningCircle } from '@phosphor-icons/react';
-import axios from 'axios';
+import axios from '../api/axios';
 
 const TIPS = [
   '아이의 이름을 넣으면 더 특별한 동화가 완성돼요!',
@@ -37,8 +37,26 @@ export default function LoadingPage() {
   const tipIntervalRef = useRef(null);
 
   const jobId = sessionStorage.getItem('job_id');
+  const isDemo = sessionStorage.getItem('demo_mode') === 'true';
 
   const poll = async () => {
+    if (isDemo) {
+      // 데모 모드: 가짜 로딩 후 랜덤 샘플 동화로 이동
+      const samples = ['s1', 's2', 's3', 's4', 's5'];
+      const pick = samples[Math.floor(Math.random() * samples.length)];
+      let pct = 0;
+      const timer = setInterval(() => {
+        pct += Math.floor(Math.random() * 15) + 5;
+        if (pct >= 100) {
+          clearInterval(timer);
+          sessionStorage.removeItem('demo_mode');
+          navigate('/viewer/' + pick);
+        } else {
+          setStatus(pct < 40 ? 'pending' : pct < 80 ? 'story_done' : 'image_done');
+        }
+      }, 600);
+      return;
+    }
     if (!jobId) {
       setStatus('failed');
       setErrorMsg('작업 ID를 찾을 수 없어요. 다시 시도해 주세요.');

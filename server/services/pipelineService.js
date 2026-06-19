@@ -10,9 +10,7 @@ export async function startGeneratePipeline(job_id, input, user_id) {
 
     const story = await generateStory(input);
     updateJob(job_id, { status: 'story_done', story, input, user_id });
-
-    // 자동으로 이미지 생성까지 이어서 실행
-    await confirmStory(job_id);
+    // 사용자가 줄거리 확인 후 confirm 호출 시 이미지 생성 시작
   } catch (err) {
     updateJob(job_id, { status: 'failed', error_code: err.error_code ?? 'UNKNOWN', error: err.message });
   }
@@ -81,7 +79,7 @@ async function generateImages(job_id, story_id, title, savedPages, story, input)
     const promptMap = Object.fromEntries(imagePromptPages.map(p => [p.page_number, p.image_prompt]));
 
     await Promise.all([
-      generateCoverImage(story_id, title, input.art_style, story.character),
+      generateCoverImage(story_id, title, input.art_style_en ?? input.art_style, story.character),
       ...savedPages.map((p, i) =>
         generateAndSaveImage(p.id, story_id, promptMap[i + 1] ?? '')
       ),

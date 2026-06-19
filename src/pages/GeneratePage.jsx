@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User, Plus, X, ArrowLeft, ArrowRight, CheckCircle,
@@ -6,13 +6,11 @@ import {
   Storefront, Star, PaintBrush
 } from '@phosphor-icons/react';
 import useGenerateStore from '../store/generateStore';
+import useOptionsStore from '../store/optionsStore';
+import { AGE_OPTIONS } from '../utils/constants';
 
 /* ── 상수 ─────────────────────────────────────── */
-const AGE_OPTIONS = [
-  { label: '4-6세', value: '4-6' },
-  { label: '7-9세', value: '7-9' },
-  { label: '10-12세', value: '10-12' },
-];
+// AGE_OPTIONS는 constants에서 import
 
 const BG_OPTIONS = [
   { label: '학교', value: '학교', icon: <Bookmarks size={18} /> },
@@ -55,7 +53,7 @@ function Stepper({ step }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontWeight: 700, fontSize: 14,
                 color: i <= step ? 'var(--text)' : 'var(--text-muted)',
-                transition: 'background .2s',
+                transition: 'setting .2s',
               }}
             >
               {i < step ? <CheckCircle size={18} weight="fill" /> : i + 1}
@@ -77,7 +75,7 @@ function Stepper({ step }) {
               style={{
                 width: 56, height: 3, marginBottom: 20,
                 background: i < step ? 'var(--primary)' : 'var(--step-idle)',
-                transition: 'background .2s',
+                transition: 'setting .2s',
               }}
             />
           )}
@@ -160,7 +158,7 @@ function CharCard({ char, idx, onChange, onRemove, isMain }) {
 
 /* ── Step 0 ─────────────────────────────────────── */
 function Step0({ store }) {
-  const { input_mode, chars, age, setinput_mode, setage, updateCharacter, addCharacter, removeCharacter } = store;
+  const { input_mode, chars, age, setInputMode, setAge, updateChar, addChar, removeChar } = store;
 
   return (
     <div className="fade" style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -169,7 +167,7 @@ function Step0({ store }) {
         {[{ label: '아이 입력', value: 'child' }, { label: '부모 입력', value: 'parent' }].map(m => (
           <button
             key={m.value}
-            onClick={() => setinput_mode(m.value)}
+            onClick={() => setInputMode(m.value)}
             className="pill"
             style={{
               padding: '7px 18px', borderRadius: 999,
@@ -188,19 +186,19 @@ function Step0({ store }) {
       {/* 캐릭터 */}
       <div>
         <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, color: 'var(--text)' }}>등장인물</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, alignItems: 'start' }}>
           {chars.map((c, i) => (
             <CharCard
               key={i} char={c} idx={i}
-              onChange={updateCharacter}
-              onRemove={removeCharacter}
+              onChange={updateChar}
+              onRemove={removeChar}
               isMain={i === 0}
             />
           ))}
           {chars.length < 3 && (
             <button
               className="addcard"
-              onClick={addCharacter}
+              onClick={addChar}
               style={{
                 border: '1.5px dashed var(--border-dashed)', borderRadius: 16,
                 background: 'transparent', cursor: 'pointer',
@@ -226,18 +224,21 @@ function Step0({ store }) {
           {AGE_OPTIONS.map(a => (
             <button
               key={a.value}
-              onClick={() => setage(a.value)}
+              onClick={() => setAge(a.value)}
               className="opt"
               style={{
-                flex: 1, padding: '14px 8px', borderRadius: 14,
+                flex: 1, padding: '16px 12px', borderRadius: 14,
                 border: '1.5px solid',
                 borderColor: age === a.value ? 'var(--primary)' : 'var(--border)',
                 background: age === a.value ? 'var(--primary)' : 'var(--surface)',
-                color: 'var(--text)', fontWeight: 700, fontSize: 15,
-                cursor: 'pointer', transition: 'all .15s',
+                color: 'var(--text)', cursor: 'pointer', transition: 'all .15s',
+                textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 6,
               }}
             >
-              {a.label}
+              <span style={{ fontWeight: 700, fontSize: 15 }}>{a.title}</span>
+              {a.lines.map((l, i) => (
+                <span key={i} style={{ fontSize: 12, color: age === a.value ? 'var(--text-on-primary)' : 'var(--text-muted)', fontWeight: 400 }}>{l}</span>
+              ))}
             </button>
           ))}
         </div>
@@ -246,74 +247,94 @@ function Step0({ store }) {
   );
 }
 
+/* ── 2단계 선택 공통 컴포넌트 ──────────────────── */
+function TwoLevelSelect({ label, desc, items, selectedParent, selectedChild, onSelectParent, onSelectChild, hasEn }) {
+  return (
+    <div>
+      <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: 'var(--text)' }}>{label}</h3>
+      {desc && <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>{desc}</p>}
+      {/* 1단계 */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: selectedParent ? 10 : 0 }}>
+        {items.map(item => (
+          <button key={item.label} onClick={() => onSelectParent(item)}
+            style={{
+              padding: '9px 18px', borderRadius: 999, cursor: 'pointer',
+              border: '1.5px solid',
+              borderColor: selectedParent?.label === item.label ? 'var(--primary)' : 'var(--border)',
+              background: selectedParent?.label === item.label ? 'var(--primary)' : 'var(--surface)',
+              color: 'var(--text)', fontWeight: 700, fontSize: 14, transition: 'all .15s',
+            }}
+          >{item.label}</button>
+        ))}
+      </div>
+      {/* 2단계 */}
+      {selectedParent?.children?.length > 0 && (
+        <div className="fade" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+          {selectedParent.children.map(child => (
+            <button key={child.label} onClick={() => onSelectChild(child)}
+              style={{
+                padding: '8px 16px', borderRadius: 999, cursor: 'pointer',
+                border: '1.5px solid',
+                borderColor: selectedChild?.label === child.label ? 'var(--accent)' : 'var(--border)',
+                background: selectedChild?.label === child.label ? 'var(--accent)' : 'var(--bg)',
+                color: 'var(--text)', fontWeight: 600, fontSize: 13, transition: 'all .15s',
+              }}
+            >{child.label}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Step 1 ─────────────────────────────────────── */
 function Step1({ store }) {
-  const { input_mode, background, situation, moral, setBackground, setSituation, setMoral } = store;
+  const { input_mode, setting, situation, moral, setSetting, setSituation, setMoral } = store;
+  const options = useOptionsStore(s => s.options);
+  const [settingParent, setSettingParent] = React.useState(null);
+  const [settingChild, setSettingChild] = React.useState(null);
+  const [situationParent, setSituationParent] = React.useState(null);
+  const [situationChild, setSituationChild] = React.useState(null);
+  const [goalParent, setGoalParent] = React.useState(null);
+  const [goalChild, setGoalChild] = React.useState(null);
+
+  if (!options) return <div style={{ padding: 24, color: 'var(--text-muted)', textAlign: 'center' }}>선택지 불러오는 중...</div>;
 
   return (
     <div className="fade" style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       {/* 배경 */}
-      <div>
-        <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>배경</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          {BG_OPTIONS.map(b => (
-            <button
-              key={b.value}
-              onClick={() => setBackground(b.value)}
-              className="pill"
-              style={{
-                padding: '9px 18px', borderRadius: 999,
-                border: '1.5px solid',
-                borderColor: background === b.value ? 'var(--primary)' : 'var(--border)',
-                background: background === b.value ? 'var(--primary)' : 'var(--surface)',
-                color: 'var(--text)', fontWeight: 600, fontSize: 14,
-                cursor: 'pointer', transition: 'all .15s',
-                display: 'flex', alignItems: 'center', gap: 7,
-              }}
-            >
-              {b.icon}
-              {b.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <TwoLevelSelect
+        label="배경"
+        desc="동화가 펼쳐지는 공간을 선택해주세요"
+        items={options.setting}
+        selectedParent={settingParent}
+        selectedChild={settingChild}
+        onSelectParent={p => { setSettingParent(p); setSettingChild(null); setSetting('', ''); }}
+        onSelectChild={c => { setSettingChild(c); setSetting(c.label, c.en); }}
+      />
 
       {/* 상황 */}
-      <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <label className="label" style={{ fontWeight: 700, fontSize: 14 }}>
-          어떤 이야기를 담고 싶으세요?
-        </label>
-        <textarea
-          value={situation}
-          onChange={e => setSituation(e.target.value)}
-          placeholder="예: 처음 학교에 가는 날, 새 친구를 사귀게 되는 이야기"
-          rows={4}
-          style={{
-            padding: '12px 16px', borderRadius: 12,
-            border: '1.5px solid var(--border)', background: 'var(--surface)',
-            color: 'var(--text)', fontSize: 14, resize: 'vertical', lineHeight: 1.7,
-          }}
-        />
-      </div>
+      <TwoLevelSelect
+        label="상황 입력"
+        desc="어떤 일이 일어났나요? 큰 상황을 먼저 고른 뒤 세부 상황을 선택해주세요"
+        items={options.situation}
+        selectedParent={situationParent}
+        selectedChild={situationChild}
+        onSelectParent={p => { setSituationParent(p); setSituationChild(null); setSituation(''); }}
+        onSelectChild={c => { setSituationChild(c); setSituation(c.label); }}
+      />
 
-      {/* 교훈 (부모 모드만) */}
+      {/* 성장 목표 (부모 모드) */}
       {input_mode === 'parent' && (
-        <div className="field fade" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label className="label" style={{ fontWeight: 700, fontSize: 14 }}>
-            아이에게 전하고 싶은 교훈은 무엇인가요?
-          </label>
-          <textarea
-            value={moral}
-            onChange={e => setMoral(e.target.value)}
-            placeholder="예: 용기를 내면 무엇이든 할 수 있다는 것을 알려주고 싶어요"
-            rows={3}
-            style={{
-              padding: '12px 16px', borderRadius: 12,
-              border: '1.5px solid var(--border)', background: 'var(--surface)',
-              color: 'var(--text)', fontSize: 14, resize: 'vertical', lineHeight: 1.7,
-            }}
-          />
-        </div>
+        <TwoLevelSelect
+          label="성장 목표"
+          desc="이 동화를 통해 아이가 무엇을 느꼈으면 하나요?"
+          items={options.goal}
+          selectedParent={goalParent}
+          selectedChild={goalChild}
+          onSelectParent={p => { setGoalParent(p); setGoalChild(null); setMoral(''); }}
+          onSelectChild={c => { setGoalChild(c); setMoral(c.label); }}
+        />
       )}
     </div>
   );
@@ -321,39 +342,40 @@ function Step1({ store }) {
 
 /* ── Step 2 ─────────────────────────────────────── */
 function Step2({ store }) {
-  const { artStyle, setArtStyle, chars, age, background, situation, moral, input_mode } = store;
+  const { artStyle, setArtStyle, chars, age, setting, situation, moral, input_mode } = store;
+  const options = useOptionsStore(s => s.options);
   const main = chars[0] || {};
+  const artStyles = options?.art_style || [];
+  const ART_PALETTE_DEFAULT = '#fff8de';
 
   return (
     <div className="fade" style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       {/* 그림체 */}
       <div>
-        <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>그림체</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: 'var(--text)' }}>그림체</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 }}>동화에 어울리는 그림 스타일을 골라주세요</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-          {ART_STYLES.map(a => (
+          {artStyles.map(a => (
             <button
-              key={a.value}
-              onClick={() => setArtStyle(a.value)}
-              className="artcard"
+              key={a.label}
+              onClick={() => setArtStyle(a.label, a.en)}
               style={{
                 padding: '20px 16px', borderRadius: 16, cursor: 'pointer',
                 border: '2px solid',
-                borderColor: artStyle === a.value ? 'var(--primary)' : 'var(--border)',
-                background: artStyle === a.value ? ART_PALETTE[a.value] : 'var(--surface)',
+                borderColor: artStyle === a.label ? 'var(--primary)' : 'var(--border)',
+                background: artStyle === a.label ? 'var(--primary)' : 'var(--surface)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                transition: 'all .18s',
+                transition: 'all .18s', fontFamily: 'inherit',
               }}
             >
               <div style={{
                 width: 52, height: 52, borderRadius: 12,
-                background: ART_PALETTE[a.value],
-                border: '1.5px solid var(--border)',
+                background: 'var(--surface-sunk)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <PaintBrush size={26} color="#5c4033" weight="duotone" />
               </div>
               <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{a.label}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>{a.desc}</span>
             </button>
           ))}
         </div>
@@ -368,10 +390,10 @@ function Step2({ store }) {
         {[
           { k: '주인공', v: main.name ? `${main.name} (${main.gender === 'female' ? '여자' : '남자'})` : '미입력' },
           { k: '나이대', v: age || '미선택' },
-          { k: '배경', v: background || '미선택' },
+          { k: '배경', v: setting || '미선택' },
           { k: '상황', v: situation || '미입력' },
           ...(input_mode === 'parent' ? [{ k: '교훈', v: moral || '미입력' }] : []),
-          { k: '그림체', v: ART_STYLES.find(a => a.value === artStyle)?.label || '미선택' },
+          { k: '그림체', v: artStyle || '미선택' },
         ].map(row => (
           <div key={row.k} className="sum-row">
             <span className="k">{row.k}</span>
@@ -392,7 +414,7 @@ export default function GeneratePage() {
   const canNext = () => {
     if (step === 0) return store.chars[0]?.name && store.age;
     if (step === 1) return store.setting && store.situation;
-    if (step === 2) return !!store.artStyle;
+    if (step === 2) return !!store.artStyle && !!store.setting && !!store.situation;
     return false;
   };
 

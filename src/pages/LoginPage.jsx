@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, loginWithGoogle } from '../api/auth.js';
+import { supabase } from '../api/axios.js';
 import useAuthStore from '../store/authStore.js';
 
 export default function LoginPage() {
@@ -16,11 +16,12 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const { token, user } = await login({ email, password });
-      setUser({ ...user, token });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      setUser({ id: data.user.id, email: data.user.email, nickname: data.user.user_metadata?.nickname });
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || '로그인에 실패했어요.');
+      setError(err.message || '이메일 또는 비밀번호가 올바르지 않아요.');
     } finally {
       setLoading(false);
     }
@@ -28,7 +29,7 @@ export default function LoginPage() {
 
   async function handleGoogle() {
     try {
-      await loginWithGoogle();
+      await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` } });
     } catch {
       setError('구글 로그인에 실패했어요.');
     }

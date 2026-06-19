@@ -11,12 +11,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const styleMap = {
-  watercolor: 'soft watercolor style',
-  cartoon: 'flat cartoon style',
-  fairytale: 'classic fairytale illustration',
-  animation: 'vibrant animation style',
-};
+// styleMap 제거 — art_style_en을 input에서 직접 받음
+const DEFAULT_STYLE = "children's book illustration, warm colors, gentle lines";
 
 const AGE_MIDPOINT = { '4-6': '5', '7-9': '8', '10-12': '11' };
 
@@ -44,8 +40,8 @@ function fillImageTemplate(template, input, storyPages) {
     .replace(/{character_name}/g, input.character_name ?? '')
     .replace(/{age}/g, AGE_MIDPOINT[input.age_group] ?? input.age_group ?? '')
     .replace(/{gender}/g, input.character_gender ?? '')
-    .replace(/{art_style}/g, input.art_style ?? '')
-    .replace(/{setting}/g, input.background ?? '')
+    .replace(/{art_style}/g, input.art_style_en ?? input.art_style ?? DEFAULT_STYLE)
+    .replace(/{setting}/g, input.setting_en ?? input.background ?? '')
     .replace(/{story_pages}/g, JSON.stringify(storyPages));
 }
 
@@ -73,9 +69,9 @@ export async function generateAllImagePrompts(story, input) {
   }
 }
 
-export async function generateCoverImage(story_id, title, art_style, character) {
+export async function generateCoverImage(story_id, title, art_style_en, character) {
   try {
-    const style = styleMap[art_style] ?? 'soft watercolor style';
+    const style = art_style_en || DEFAULT_STYLE;
     const characterDesc = buildCharacterDesc(character);
     const prompt = `Children's book cover illustration. Title theme: "${title}". Main character: ${characterDesc}. Warm and inviting composition, centered character, ${style}, no text, no words`;
 

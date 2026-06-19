@@ -1,57 +1,71 @@
-﻿import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, SignOut, TrashSimple } from '@phosphor-icons/react';
+import { BookOpen, SignOut, TrashSimple, PencilSimple, Check, X } from '@phosphor-icons/react';
+import { supabase } from '../api/axios';
+import useAuthStore from '../store/authStore';
+import axios from '../api/axios';
 import Footer from '../components/layout/Footer';
 
 export default function MyPage() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({
-    guardianName: '',
-    email: '',
-    childName: '',
-    childAge: '',
-  });
-  const [saved, setSaved] = useState(false);
+  const clearUser = useAuthStore(s => s.clearUser);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setProfile(prev => ({ ...prev, [name]: value }));
-    setSaved(false);
+  const [user, setUser] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState('');
+  const [storyStats, setStoryStats] = useState({ total: 0, thisMonth: 0, lastDate: '-' });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUser(user);
+        setName(user.user_metadata?.nickname || user.user_metadata?.name || '');
+      }
+    });
+
+    axios.get('/v1/stories').then(res => {
+      const stories = res.data || [];
+      const now = new Date();
+      const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const thisMonth = stories.filter(s => s.created_at?.startsWith(ym)).length;
+      const lastDate = stories[0]?.created_at
+        ? new Date(stories[0].created_at).toLocaleDateString('ko-KR')
+        : '-';
+      setStoryStats({ total: stories.length, thisMonth, lastDate });
+    }).catch(() => {});
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await supabase.auth.updateUser({ data: { nickname: name } });
+      setEditing(false);
+    } catch (e) {
+      alert('저장에 실패했어요.');
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleSave(e) {
-    e.preventDefault();
-    // TODO: PUT /users/me 연결
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function handleLogout() {
+    if (!window.confirm('로그아웃 하시겠어요?')) return;
+    await supabase.auth.signOut();
+    clearUser();
+    navigate('/');
   }
 
-  function handleLogout() {
-    if (window.confirm('로그아웃 하시겠어요?')) {
-      // TODO: Supabase 로그아웃 연결
+  async function handleDelete() {
+    if (!window.confirm('정말 탈퇴하시겠어요? 모든 동화가 삭제됩니다.')) return;
+    try {
+      await axios.delete('/v1/users/me');
+      await supabase.auth.signOut();
+      clearUser();
       navigate('/');
+    } catch {
+      alert('회원 탈퇴에 실패했어요. 잠시 후 다시 시도해주세요.');
     }
   }
-
-  function handleDelete() {
-    if (window.confirm('정말 탈퇴하시겠어요? 모든 동화가 삭제됩니다.')) {
-      // TODO: DELETE /users/me 연결
-      alert('회원 탈퇴 기능은 추후 연결 예정입니다.');
-    }
-  }
-
-  const inputStyle = {
-    width: '100%', padding: '11px 14px',
-    background: 'var(--bg)', border: 'var(--bw) solid var(--border)',
-    borderRadius: 'var(--radius-input)', fontSize: 'var(--fs-body)',
-    color: 'var(--text)', transition: 'border-color var(--dur-base)',
-    boxSizing: 'border-box',
-  };
-
-  const labelStyle = {
-    display: 'block', fontSize: 'var(--fs-sm)',
-    fontWeight: 'var(--fw-medium)', color: 'var(--text)', marginBottom: 6,
-  };
 
   const sectionStyle = {
     background: 'var(--surface)', borderRadius: 'var(--radius-card)',
@@ -59,115 +73,118 @@ export default function MyPage() {
     boxShadow: 'var(--shadow-card)', marginBottom: 24,
   };
 
+  const inputStyle = {
+    width: '100%', padding: '11px 14px',
+    background: 'var(--bg)', border: 'var(--bw) solid var(--border)',
+    borderRadius: 'var(--radius-input)', fontSize: 'var(--fs-body)',
+    color: 'var(--text)', boxSizing: 'border-box',
+  };
+
+  const readStyle = {
+    padding: '11px 0', fontSize: 'var(--fs-body)',
+    color: 'var(--text)', borderBottom: 'var(--bw) solid var(--border)',
+  };
+
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <main className="wrap fade" style={{ flex: 1, paddingTop: 52, paddingBottom: 72, maxWidth: 680 }}>
-        <h1 style={{
-          fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-black)',
-          color: 'var(--text)', margin: '0 0 32px',
-        }}>
+        <h1 style={{ fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-black)', color: 'var(--text)', margin: '0 0 32px' }}>
           마이페이지
         </h1>
 
-        {/* ── 프로필 폼 ── */}
+        {/* ── 내 정보 ── */}
         <div style={sectionStyle}>
-          <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: 'var(--text)', margin: '0 0 22px' }}>
-            내 정보
-          </h2>
-          <form onSubmit={handleSave}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 20px', marginBottom: 24 }}>
-              {/* 보호자 이름 */}
-              <div>
-                <label style={labelStyle}>보호자 이름</label>
-                <input
-                  type="text"
-                  name="guardianName"
-                  value={profile.guardianName}
-                  onChange={handleChange}
-                  placeholder="홍길동"
-                  style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = 'var(--border-strong)'}
-                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                />
-              </div>
-              {/* 이메일 */}
-              <div>
-                <label style={labelStyle}>이메일</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={profile.email}
-                  onChange={handleChange}
-                  placeholder="example@email.com"
-                  style={{ ...inputStyle, opacity: 0.7 }}
-                  readOnly
-                />
-              </div>
-              {/* 아이 이름 */}
-              <div>
-                <label style={labelStyle}>아이 이름</label>
-                <input
-                  type="text"
-                  name="childName"
-                  value={profile.childName}
-                  onChange={handleChange}
-                  placeholder="민준"
-                  style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = 'var(--border-strong)'}
-                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                />
-              </div>
-              {/* 아이 나이 */}
-              <div>
-                <label style={labelStyle}>아이 나이</label>
-                <select
-                  name="childAge"
-                  value={profile.childAge}
-                  onChange={handleChange}
-                  style={{ ...inputStyle, cursor: 'pointer' }}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
+            <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: 'var(--text)', margin: 0 }}>
+              내 정보
+            </h2>
+            {!editing ? (
+              <button
+                onClick={() => setEditing(true)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 16px', borderRadius: 'var(--radius-pill)',
+                  border: 'var(--bw) solid var(--border)', background: 'var(--bg)',
+                  color: 'var(--text)', fontSize: 'var(--fs-sm)', fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                <PencilSimple size={14} /> 수정하기
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '8px 16px', borderRadius: 'var(--radius-pill)',
+                    border: 'none', background: 'var(--primary)',
+                    color: 'var(--text)', fontSize: 'var(--fs-sm)', fontWeight: 700, cursor: 'pointer',
+                  }}
                 >
-                  <option value="">선택하세요</option>
-                  {Array.from({ length: 9 }, (_, i) => i + 4).map(age => (
-                    <option key={age} value={age}>{age}세</option>
-                  ))}
-                </select>
+                  <Check size={14} /> {saving ? '저장 중...' : '저장'}
+                </button>
+                <button
+                  onClick={() => setEditing(false)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '8px 16px', borderRadius: 'var(--radius-pill)',
+                    border: 'var(--bw) solid var(--border)', background: 'var(--bg)',
+                    color: 'var(--text-muted)', fontSize: 'var(--fs-sm)', cursor: 'pointer',
+                  }}
+                >
+                  <X size={14} /> 취소
+                </button>
               </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {/* 이름 */}
+            <div>
+              <label style={{ display: 'block', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                이름
+              </label>
+              {editing ? (
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="이름을 입력해주세요"
+                  style={inputStyle}
+                  onFocus={e => e.target.style.borderColor = 'var(--border-strong)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                />
+              ) : (
+                <p style={readStyle}>{name || '미설정'}</p>
+              )}
             </div>
-            <button
-              type="submit"
-              style={{
-                padding: '12px 28px',
-                background: saved ? 'var(--accent)' : 'var(--primary)',
-                color: saved ? 'var(--text-on-accent)' : 'var(--text-on-primary)',
-                border: 'none', borderRadius: 'var(--radius-pill)',
-                fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)',
-                cursor: 'pointer', transition: 'background var(--dur-base)',
-              }}
-            >
-              {saved ? '저장됐어요!' : '변경사항 저장'}
-            </button>
-          </form>
+
+            {/* 이메일 */}
+            <div>
+              <label style={{ display: 'block', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                이메일
+              </label>
+              <p style={{ ...readStyle, opacity: 0.7 }}>{user?.email || '-'}</p>
+            </div>
+          </div>
         </div>
 
-        {/* ── 만든 동화 통계 ── */}
+        {/* ── 나의 동화 현황 ── */}
         <div style={sectionStyle}>
           <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-bold)', color: 'var(--text)', margin: '0 0 18px' }}>
             나의 동화 현황
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {[
-              { label: '만든 동화', value: '0편' },
-              { label: '이번 달 생성', value: '0편' },
-              { label: '마지막 생성', value: '-' },
+              { label: '만든 동화', value: `${storyStats.total}편` },
+              { label: '이번 달 생성', value: `${storyStats.thisMonth}편` },
+              { label: '마지막 생성', value: storyStats.lastDate },
             ].map(item => (
-              <div
-                key={item.label}
-                style={{
-                  background: 'var(--bg)', borderRadius: 'var(--radius-md)',
-                  border: 'var(--bw) solid var(--border)',
-                  padding: '18px 16px', textAlign: 'center',
-                }}
-              >
+              <div key={item.label} style={{
+                background: 'var(--bg)', borderRadius: 'var(--radius-md)',
+                border: 'var(--bw) solid var(--border)', padding: '18px 16px', textAlign: 'center',
+              }}>
                 <p style={{ fontSize: 22, fontWeight: 'var(--fw-black)', color: 'var(--text)', margin: '0 0 4px' }}>
                   {item.value}
                 </p>
@@ -184,52 +201,40 @@ export default function MyPage() {
               marginTop: 18, padding: '10px 22px',
               background: 'transparent', color: 'var(--text)',
               border: 'var(--bw) solid var(--border)', borderRadius: 'var(--radius-pill)',
-              fontSize: 'var(--fs-sm)', fontWeight: 'var(--fw-medium)', cursor: 'pointer',
-              transition: 'border-color var(--dur-base)',
+              fontSize: 'var(--fs-sm)', fontWeight: 500, cursor: 'pointer',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
-            <BookOpen size={16} />
-            나의 서재 보기
+            <BookOpen size={16} /> 내 서재 보기
           </button>
         </div>
 
         {/* ── 계정 액션 ── */}
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 12 }}>
           <button
             onClick={handleLogout}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '12px 24px',
-              background: 'transparent', color: 'var(--text)',
-              border: 'var(--bw) solid var(--border)', borderRadius: 'var(--radius-pill)',
-              fontSize: 'var(--fs-sm)', fontWeight: 'var(--fw-medium)', cursor: 'pointer',
-              transition: 'border-color var(--dur-base)',
+              padding: '12px 24px', borderRadius: 'var(--radius-pill)',
+              border: 'var(--bw) solid var(--border)', background: 'transparent',
+              color: 'var(--text)', fontSize: 'var(--fs-sm)', fontWeight: 500, cursor: 'pointer',
             }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
-            <SignOut size={16} />
-            로그아웃
+            <SignOut size={16} /> 로그아웃
           </button>
           <button
             onClick={handleDelete}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '12px 24px',
-              background: 'transparent', color: 'var(--text-muted)',
-              border: 'none', borderRadius: 'var(--radius-pill)',
-              fontSize: 'var(--fs-sm)', fontWeight: 'var(--fw-regular)', cursor: 'pointer',
+              padding: '12px 24px', borderRadius: 'var(--radius-pill)',
+              border: 'none', background: 'transparent',
+              color: 'var(--text-muted)', fontSize: 'var(--fs-sm)', cursor: 'pointer',
               textDecoration: 'underline', textUnderlineOffset: 3,
             }}
           >
-            <TrashSimple size={15} />
-            회원 탈퇴
+            <TrashSimple size={15} /> 회원 탈퇴
           </button>
         </div>
       </main>
-
       <Footer />
     </div>
   );

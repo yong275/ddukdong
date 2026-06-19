@@ -1,7 +1,7 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Books, Plus, Trash, PencilSimple, WarningCircle, SpinnerGap } from '@phosphor-icons/react';
-import axios from 'axios';
+import axios from '../api/axios';
 import { SAMPLE_BOOKS } from '../utils/constants';
 import Illo from '../components/illustrations/Illo';
 

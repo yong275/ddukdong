@@ -6,10 +6,12 @@ const useGenerateStore = create((set) => ({
   step: 0,
   chars: DEFAULT_CHARS,
   age: '7-9',
-  setting: '학교',
+  setting: '',
+  settingEn: '',
   situation: '',
   moral: '',
-  artStyle: 'fairytale',
+  artStyle: '',
+  artStyleEn: '',
   input_mode: 'parent',
 
   setStep: (step) => set({ step }),
@@ -32,15 +34,20 @@ const useGenerateStore = create((set) => ({
       chars: state.chars.filter((_, i) => i !== index),
     })),
 
+  updateChar: (index, field, value) =>
+    set((state) => ({
+      chars: state.chars.map((c, i) => i === index ? { ...c, [field]: value } : c),
+    })),
+
   setAge: (age) => set({ age }),
 
-  setSetting: (setting) => set({ setting }),
+  setSetting: (setting, settingEn = '') => set({ setting, settingEn }),
 
   setSituation: (situation) => set({ situation }),
 
   setMoral: (moral) => set({ moral }),
 
-  setArtStyle: (artStyle) => set({ artStyle }),
+  setArtStyle: (artStyle, artStyleEn = '') => set({ artStyle, artStyleEn }),
 
   setInputMode: (input_mode) => set({ input_mode }),
 
@@ -49,10 +56,12 @@ const useGenerateStore = create((set) => ({
       step: 0,
       chars: DEFAULT_CHARS,
       age: '7-9',
-      setting: '학교',
+      setting: '',
+      settingEn: '',
       situation: '',
       moral: '',
-      artStyle: 'fairytale',
+      artStyle: '',
+      artStyleEn: '',
       input_mode: 'parent',
     }),
 }));

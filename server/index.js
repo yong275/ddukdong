@@ -6,6 +6,7 @@ import authRouter from './routes/auth.js';
 import storiesRouter from './routes/stories.js';
 import translateRouter from './routes/translate.js';
 import shareRouter from './routes/share.js';
+import optionsRouter from './routes/options.js';
 
 const app = express();
 const corsOptions = {
@@ -23,6 +24,7 @@ app.use('/v1/auth', authRouter);
 app.use('/v1/stories', storiesRouter);
 app.use('/v1/stories', translateRouter);
 app.use('/v1/share', shareRouter);
+app.use('/v1/options', optionsRouter);
 
 await loadConfig();
 

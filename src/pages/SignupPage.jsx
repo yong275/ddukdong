@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signup } from '../api/auth.js';
+import { supabase } from '../api/axios';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -32,10 +32,15 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
     try {
-      await signup({ email: form.email, nickname: form.guardianName, password: form.password });
+      const { error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: { data: { nickname: form.guardianName } },
+      });
+      if (error) throw error;
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.error || '회원가입에 실패했어요.');
+      setError(err.message || '회원가입에 실패했어요.');
     } finally {
       setLoading(false);
     }
