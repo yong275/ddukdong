@@ -15,6 +15,7 @@ const TIPS = [
 const STATUS_MESSAGES = {
   pending: '동화를 준비하고 있어요...',
   story_done: '이야기가 완성됐어요! 그림을 그리는 중...',
+  generating_images: '그림을 그리기 시작했어요...',
   image_done: '그림이 완성됐어요! 마무리 중...',
   completed: '동화가 완성됐어요!',
   failed: '생성 중 오류가 발생했어요.',
@@ -23,6 +24,7 @@ const STATUS_MESSAGES = {
 const STATUS_PCT = {
   pending: 15,
   story_done: 45,
+  generating_images: 50,
   image_done: 80,
   completed: 100,
   failed: 0,
@@ -41,18 +43,27 @@ export default function LoadingPage() {
 
   const poll = async () => {
     if (isDemo) {
-      // 데모 모드: 가짜 로딩 후 랜덤 샘플 동화로 이동
+      const demoPhase = sessionStorage.getItem('demo_phase') || 'story';
       const samples = ['s1', 's2', 's3', 's4', 's5'];
-      const pick = samples[Math.floor(Math.random() * samples.length)];
+      const pick = sessionStorage.getItem('demo_pick') || samples[Math.floor(Math.random() * samples.length)];
+      sessionStorage.setItem('demo_pick', pick);
       let pct = 0;
+      const targetPct = demoPhase === 'story' ? 50 : 100;
       const timer = setInterval(() => {
         pct += Math.floor(Math.random() * 15) + 5;
-        if (pct >= 100) {
+        if (pct >= targetPct) {
           clearInterval(timer);
-          sessionStorage.removeItem('demo_mode');
-          navigate('/viewer/' + pick);
+          if (demoPhase === 'story') {
+            setStatus('story_done');
+            navigate('/story-check');
+          } else {
+            sessionStorage.removeItem('demo_mode');
+            sessionStorage.removeItem('demo_phase');
+            sessionStorage.removeItem('demo_pick');
+            navigate('/viewer/' + pick);
+          }
         } else {
-          setStatus(pct < 40 ? 'pending' : pct < 80 ? 'story_done' : 'image_done');
+          setStatus(pct < 40 ? 'pending' : 'story_done');
         }
       }, 600);
       return;
@@ -66,13 +77,16 @@ export default function LoadingPage() {
       const res = await axios.get(`/v1/stories/jobs/${jobId}`);
       const { status: s, story_id } = res.data;
       setStatus(s);
-      if (s === 'completed') {
+      if (s === 'story_done') {
+        clearInterval(intervalRef.current);
+        navigate('/story-check');
+      } else if (s === 'completed') {
         clearInterval(intervalRef.current);
         sessionStorage.removeItem('job_id');
         setTimeout(() => navigate(`/viewer/${story_id}`), 600);
       } else if (s === 'failed') {
         clearInterval(intervalRef.current);
-        setErrorMsg(res.data?.message || '동화 생성에 실패했어요.');
+        setErrorMsg(res.data?.error_message || res.data?.message || '동화 생성에 실패했어요.');
       }
     } catch (e) {
       // 네트워크 오류는 무시하고 계속 폴링

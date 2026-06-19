@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../api/axios';
 import {
   User, Plus, X, ArrowLeft, ArrowRight, CheckCircle,
   Bookmarks, Mountains, House, Waves, Ghost, Park,
   Storefront, Star, PaintBrush
 } from '@phosphor-icons/react';
 import useGenerateStore from '../store/generateStore';
+import axios from '../api/axios';
 import useOptionsStore from '../store/optionsStore';
 import { AGE_OPTIONS } from '../utils/constants';
 
@@ -410,6 +412,7 @@ export default function GeneratePage() {
   const navigate = useNavigate();
   const store = useGenerateStore();
   const [step, setStep] = useState(0);
+  const [generating, setGenerating] = React.useState(false);
 
   const canNext = () => {
     if (step === 0) return store.chars[0]?.name && store.age;
@@ -418,9 +421,34 @@ export default function GeneratePage() {
     return false;
   };
 
-  const handleNext = () => {
-    if (step < 2) setStep(s => s + 1);
-    else navigate('/story-check');
+  const handleNext = async () => {
+    if (step < 2) { setStep(s => s + 1); return; }
+
+    setGenerating(true);
+    try {
+      const main = store.chars[0] || {};
+      const sub = store.chars.slice(1);
+      const res = await axios.post('/v1/stories/generate', {
+        input_mode: store.input_mode,
+        character_name: main.name,
+        character_gender: main.gender,
+        sub_characters: sub.map(c => ({ name: c.name, gender: c.gender })),
+        age_group: store.age,
+        background: store.setting,
+        setting_en: store.settingEn,
+        situation: store.situation,
+        moral: store.input_mode === 'parent' ? store.moral : '',
+        art_style: store.artStyle,
+        art_style_en: store.artStyleEn,
+      });
+      const jobId = res.data?.job_id;
+      if (jobId) sessionStorage.setItem('job_id', jobId);
+      navigate('/loading');
+    } catch (e) {
+      alert(e?.response?.data?.error || '요청에 실패했어요. 다시 시도해주세요.');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -468,7 +496,7 @@ export default function GeneratePage() {
               transition: 'all .15s',
             }}
           >
-            {step === 2 ? '확인하기' : '다음'}
+            {generating ? '생성 중...' : step === 2 ? '동화 만들기' : '다음'}
             {step < 2 && <ArrowRight size={17} />}
           </button>
         </div>

@@ -65,6 +65,9 @@ export async function confirmStory(job_id) {
     .select('id, page_number, text_ko');
   if (pagesError) throw new Error(pagesError.message);
 
+  // 이미지 생성 시작 전 상태 변경 → LoadingPage의 story_done 재감지 방지
+  updateJob(job_id, { status: 'generating_images' });
+
   generateImages(job_id, story_id, story.title, savedPages, story, input);
 
   return story_id;

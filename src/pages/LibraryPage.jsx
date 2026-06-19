@@ -206,7 +206,7 @@ export default function LibraryPage() {
         {!loading && stories.length > 0 && (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+            gridTemplateColumns: 'repeat(5, 1fr)',
             gap: 20,
           }}>
             {stories.map(story => (

@@ -9,16 +9,10 @@ import supabase from '../db/supabase.js';
 const router = Router();
 
 // POST /v1/stories/generate
-router.post('/generate', async (req, res, next) => {
+router.post('/generate', requireAuth, async (req, res, next) => {
   try {
     const job_id = randomUUID();
-    // 토큰 있으면 user_id 추출
-    let user_id = null;
-    const header = req.headers.authorization;
-    if (header?.startsWith('Bearer ')) {
-      const { data: { user } } = await supabase.auth.getUser(header.slice(7));
-      if (user) user_id = user.id;
-    }
+    const user_id = req.user.id;
     createJob(job_id, { status: 'pending', user_id });
     startGeneratePipeline(job_id, req.body, user_id);
     res.status(202).json({ job_id });
