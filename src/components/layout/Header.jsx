@@ -45,7 +45,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[--surface]/90 backdrop-blur border-b border-[--border]">
-      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
+      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center relative">
         {/* Logo */}
         <button
           onClick={() => navigate('/')}
@@ -56,8 +56,8 @@ export default function Header() {
           뚝딱동화
         </button>
 
-        {/* Nav pills */}
-        <nav className="flex items-center gap-1 ml-2">
+        {/* Nav pills - centered */}
+        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1">
           {NAV.map((item) => {
             const active =
               item.path === '/'
