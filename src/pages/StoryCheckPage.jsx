@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
+import { SAMPLE_BOOKS } from '../utils/constants';
 
 function Icon({ d, size = 20, sw = 2.3, children }) {
   return (
@@ -14,6 +15,7 @@ function Icon({ d, size = 20, sw = 2.3, children }) {
 export default function StoryCheckPage() {
   const navigate = useNavigate();
   const jobId = sessionStorage.getItem('job_id');
+  const isDemo = sessionStorage.getItem('demo_mode') === 'true';
 
   const [story, setStory] = useState(null);
   const [pages, setPages] = useState([]);
@@ -25,8 +27,15 @@ export default function StoryCheckPage() {
   const MAX_REGEN = 3;
 
   useEffect(() => {
+    // 데모 모드: 샘플 스토리 표시
+    if (isDemo) {
+      const pick = sessionStorage.getItem('demo_pick') || 's1';
+      const sample = SAMPLE_BOOKS.find(b => b.id === pick) || SAMPLE_BOOKS[0];
+      setStory({ title: sample.title });
+      setPages((sample.pages || []).map((p, i) => ({ ...p, text: p.text_ko || '', id: i + 1 })));
+      return;
+    }
     if (!jobId) { navigate('/create'); return; }
-    // job에서 story 데이터 가져오기
     axios.get(`/v1/stories/jobs/${jobId}`).then(res => {
       const { story: s } = res.data;
       if (s) {
@@ -53,9 +62,14 @@ export default function StoryCheckPage() {
   };
 
   const handleConfirm = async () => {
+    // 데모 모드: 이미지 생성 시뮬레이션 단계로
+    if (isDemo) {
+      sessionStorage.setItem('demo_phase', 'image');
+      navigate('/loading');
+      return;
+    }
     setConfirming(true);
     try {
-      // 수정된 페이지 텍스트를 job에 반영
       await axios.post(`/v1/stories/${jobId}/confirm`, { pages });
       navigate('/loading');
     } catch (e) {
@@ -98,7 +112,9 @@ export default function StoryCheckPage() {
 
         {/* 제목 */}
         <h2 style={{ fontSize: 'clamp(20px,3vw,26px)', fontWeight: 900, color: 'var(--text)', margin: '0 0 6px' }}>이야기 확인</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '0 0 24px' }}>그림은 확정 후 생성돼요. 지금 스토리를 확인하고 수정할 수 있어요.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '0 0 24px' }}>
+          {isDemo ? '체험판입니다. 로그인 후 직접 만든 동화를 수정할 수 있어요.' : '그림은 확정 후 생성돼요. 지금 스토리를 확인하고 수정할 수 있어요.'}
+        </p>
 
         {/* 스토리 카드 */}
         <div style={{ background: 'var(--surface)', borderRadius: 22, padding: 'clamp(18px,3vw,28px)' }}>
@@ -140,7 +156,7 @@ export default function StoryCheckPage() {
                   {open && (
                     <div style={{ padding: '0 20px 20px', borderTop: '1.5px solid var(--border)' }}>
                       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', paddingTop: 16, flexWrap: 'wrap' }}>
-                        {editing ? (
+                        {!isDemo && editing ? (
                           <>
                             <textarea
                               value={text}
@@ -167,15 +183,17 @@ export default function StoryCheckPage() {
                             <p style={{ flex: 1, minWidth: 240, margin: 0, fontSize: 15, lineHeight: 1.9, color: 'var(--text)', whiteSpace: 'pre-line' }}>
                               {text}
                             </p>
-                            <button
-                              onClick={() => setEditIdx(i)}
-                              style={{
-                                flexShrink: 0, background: 'var(--surface)', color: 'var(--text)',
-                                border: '1.5px solid var(--border)', borderRadius: 11,
-                                padding: '10px 20px', fontSize: 14, fontWeight: 700,
-                                cursor: 'pointer', fontFamily: 'inherit',
-                              }}
-                            >수정</button>
+                            {!isDemo && (
+                              <button
+                                onClick={() => setEditIdx(i)}
+                                style={{
+                                  flexShrink: 0, background: 'var(--surface)', color: 'var(--text)',
+                                  border: '1.5px solid var(--border)', borderRadius: 11,
+                                  padding: '10px 20px', fontSize: 14, fontWeight: 700,
+                                  cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                              >수정</button>
+                            )}
                           </>
                         )}
                       </div>
@@ -191,7 +209,7 @@ export default function StoryCheckPage() {
       {/* 하단 고정 액션 바 */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--nav-track)', borderTop: '1.5px solid var(--border)', zIndex: 30 }}>
         <div style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(14px,2vw,18px) 24px', display: 'flex', gap: 12, alignItems: 'center' }}>
-          <button
+          {!isDemo && <button
             onClick={handleRegenerate}
             disabled={regenerating || regenerateCount >= MAX_REGEN}
             style={{
@@ -206,7 +224,7 @@ export default function StoryCheckPage() {
             <Icon d="M3 12a9 9 0 1 0 3-6.7L3 8" size={18} />
             전체 재생성
             <span style={{ fontWeight: 500, opacity: 0.6, fontSize: 13 }}>({regenerateCount}/{MAX_REGEN})</span>
-          </button>
+          </button>}
           <button
             onClick={handleConfirm}
             disabled={confirming}
