@@ -14,10 +14,10 @@ function formatDate(iso) {
 
 /* ── 배경색 (art_style 기반) ─────────────────── */
 const ART_PALETTE = {
-  fairytale: '#fceabb',
-  watercolor: '#d0eaff',
-  cartoon: '#ffd6f0',
-  animation: '#d6ffe0',
+  fairytale: '#fceabb', '심플동화': '#fceabb',
+  watercolor: '#d0eaff', '수채화': '#d0eaff',
+  cartoon: '#ffd6f0',   '종이공예': '#ffd6f0',
+  animation: '#d6ffe0', '색연필': '#d6ffe0',
 };
 
 /* ── 책 카드 ─────────────────────────────────── */
@@ -26,7 +26,7 @@ function BookCard({ story, editMode, onDelete, onClick }) {
   const pages = story.page_count || story.pages?.length || 0;
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%' }}>
       {/* 삭제 버튼 (편집 모드) */}
       {editMode && (
         <button
@@ -62,12 +62,12 @@ function BookCard({ story, editMode, onDelete, onClick }) {
       >
         {/* 커버 */}
         <div style={{
-          background: bg, aspectRatio: '4/3',
+          background: bg, width: '100%', aspectRatio: '4/3',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 40, position: 'relative', overflow: 'hidden',
         }}>
           {story.cover_url
-            ? <img src={story.cover_url} alt={story.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <img src={story.cover_url} alt={story.title} style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }} />
             : story.illo
               ? <Illo name={story.illo} size={100} />
               : <span>📖</span>
@@ -204,11 +204,7 @@ export default function LibraryPage() {
 
         {/* 책 그리드 */}
         {!loading && stories.length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: 20,
-          }}>
+          <div className="grid-5-lib">
             {stories.map(story => (
               <BookCard
                 key={story.id}
@@ -230,7 +226,7 @@ export default function LibraryPage() {
                   display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center',
                   gap: 10, padding: '28px 16px', color: 'var(--text-muted)',
-                  minHeight: 180, transition: 'border-color .15s',
+                  width: '100%', alignSelf: 'stretch', transition: 'border-color .15s',
                 }}
               >
                 <Plus size={30} />

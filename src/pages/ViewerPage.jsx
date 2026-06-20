@@ -323,8 +323,9 @@ export default function ViewerPage() {
 
         {/* 썸네일 */}
         <div style={{
-          display: 'grid', gridTemplateColumns: `repeat(${totalSlides}, 1fr)`,
-          gap: 'clamp(8px,1.4vw,14px)', marginTop: 'clamp(20px,3vw,32px)',
+          display: 'grid', gridTemplateColumns: `repeat(${totalSlides}, minmax(48px, 1fr))`,
+          gap: 'clamp(6px,1.4vw,14px)', marginTop: 'clamp(20px,3vw,32px)',
+          overflowX: 'auto', paddingBottom: 4,
         }}>
           {Array.from({ length: totalSlides }).map((_, i) => (
             <button key={i} onClick={() => go(i)} style={{

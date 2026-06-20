@@ -47,17 +47,19 @@ export default function LoginPage() {
         <div style={{ width: '100%', maxWidth: 440 }}>
           {/* 마스코트 + 타이틀 */}
           <div style={{ textAlign: 'center', marginBottom: 36 }}>
-            <img
-              src={`${import.meta.env.BASE_URL}assets/mascot-light.png`}
-              alt="뚝딱 마스코트"
-              style={{ width: 96, height: 'auto', marginBottom: 12 }}
-            />
-            <h1 style={{
-              fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-black)',
-              color: 'var(--text)', margin: 0,
-            }}>
-              뚝딱동화
-            </h1>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <h1 style={{
+                fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-black)',
+                color: 'var(--text)', margin: 0,
+              }}>
+                뚝딱동화
+              </h1>
+              <img
+                src={`${import.meta.env.BASE_URL}assets/mascot-light.png`}
+                alt="뚝딱 마스코트"
+                style={{ width: 72, height: 'auto' }}
+              />
+            </div>
             <p style={{ color: 'var(--text-muted)', marginTop: 6, fontSize: 'var(--fs-sm)' }}>
               로그인하고 우리 아이만의 동화를 만들어보세요
             </p>

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import useGuideStore from '../store/guideStore';
 import { Sparkle, UserCirclePlus, SlidersHorizontal, PaintBrushBroad } from '@phosphor-icons/react';
 
 import Footer from '../components/layout/Footer';
@@ -20,7 +21,7 @@ const FEATURES = [
   {
     icon: <PaintBrushBroad size={32} weight="duotone" />,
     title: '4가지 그림체',
-    desc: '수채화, 카툰, 동화, 애니메이션 중\n아이가 좋아하는 스타일로 골라요.',
+    desc: '심플동화, 수채화, 종이공예, 색연필 중\n아이가 좋아하는 스타일로 골라요.',
   },
 ];
 
@@ -28,6 +29,7 @@ const FEATURES = [
 
 export default function MainPage() {
   const navigate = useNavigate();
+  const setGuideOpen = useGuideStore(s => s.setOpen);
 
 
 
@@ -37,7 +39,7 @@ export default function MainPage() {
 
       {/* ── Hero ── */}
       <section className="wrap fade" style={{ paddingTop: 72, paddingBottom: 72 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }}>
+        <div className="grid-hero">
           {/* Left */}
           <div>
             <Badge icon={<Sparkle size={14} weight="fill" />} style={{ marginBottom: 20 }}>
@@ -49,7 +51,7 @@ export default function MainPage() {
             <p style={{ fontSize: 'var(--fs-lead)', color: 'var(--text-muted)', marginBottom: 36, lineHeight: 'var(--lh-body)' }}>
               아이의 이름과 고민을 입력하면, AI가 세상에서 단 하나뿐인<br />맞춤 동화를 뚝딱 만들어드려요.
             </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div className="hero-btns" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <button
                 onClick={() => navigate('/create')}
                 style={{
@@ -65,7 +67,7 @@ export default function MainPage() {
                 동화 만들기
               </button>
               <button
-                onClick={() => navigate('/guide')}
+                onClick={() => setGuideOpen(true)}
                 style={{
                   background: 'transparent', color: 'var(--text)',
                   border: 'var(--bw) solid var(--border)', borderRadius: 'var(--radius-pill)',
@@ -97,7 +99,7 @@ export default function MainPage() {
         <h2 style={{ fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-bold)', color: 'var(--text)', marginBottom: 32, textAlign: 'center' }}>
           뚝딱동화가 특별한 이유
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+        <div className="grid-3-feat">
           {FEATURES.map((f, i) => (
             <div
               key={i}
@@ -123,11 +125,11 @@ export default function MainPage() {
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: 32, fontSize: 'var(--fs-sm)' }}>
           로그인하면 직접 만들어볼 수 있어요
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
+        <div className="grid-5">
           {SAMPLE_BOOKS.map(s => (
             <div
               key={s.id}
-              onClick={() => navigate(/viewer/+s.id)}
+              onClick={() => navigate(`/viewer/${s.id}`)}
               style={{
                 background: 'var(--surface)', borderRadius: 'var(--radius-card)',
                 border: 'var(--bw) solid var(--border)', overflow: 'hidden',
@@ -137,7 +139,7 @@ export default function MainPage() {
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-pop)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; }}
             >
-              <div style={{ aspectRatio: '3/4', padding: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ aspectRatio: '3/4', padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Illo name={s.illo} />
               </div>
             </div>

@@ -26,17 +26,17 @@ const BG_OPTIONS = [
 ];
 
 const ART_STYLES = [
-  { value: 'fairytale', label: '동화책 스타일', desc: '따뜻하고 클래식한 삽화' },
-  { value: 'watercolor', label: '수채화', desc: '부드럽고 몽환적인 수채화' },
-  { value: 'cartoon', label: '만화', desc: '귀엽고 생동감 있는 만화' },
-  { value: 'animation', label: '애니메이션', desc: '선명하고 밝은 애니 스타일' },
+  { value: 'fairytale', label: '심플동화', desc: '따뜻하고 심플한 동화 삽화', img: 'flat_storybook.png' },
+  { value: 'watercolor', label: '수채화', desc: '부드럽고 몽환적인 수채화', img: 'watercolor.png' },
+  { value: 'cartoon', label: '종이공예', desc: '입체적인 종이공예 스타일', img: 'layered_paper.png' },
+  { value: 'animation', label: '색연필', desc: '따뜻한 색연필 드로잉 스타일', img: 'colorpencle.png' },
 ];
 
 const ART_PALETTE = {
-  fairytale: '#fceabb',
-  watercolor: '#d0eaff',
-  cartoon: '#ffd6f0',
-  animation: '#d6ffe0',
+  fairytale: '#fceabb', '심플동화': '#fceabb',
+  watercolor: '#d0eaff', '수채화': '#d0eaff',
+  cartoon: '#ffd6f0',   '종이공예': '#ffd6f0',
+  animation: '#d6ffe0', '색연필': '#d6ffe0',
 };
 
 /* ── 스테퍼 ─────────────────────────────────────── */
@@ -188,7 +188,7 @@ function Step0({ store }) {
       {/* 캐릭터 */}
       <div>
         <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, color: 'var(--text)' }}>등장인물</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, alignItems: 'start' }}>
+        <div className="grid-3">
           {chars.map((c, i) => (
             <CharCard
               key={i} char={c} idx={i}
@@ -370,13 +370,11 @@ function Step2({ store }) {
                 transition: 'all .18s', fontFamily: 'inherit',
               }}
             >
-              <div style={{
-                width: 52, height: 52, borderRadius: 12,
-                background: 'var(--surface-sunk)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <PaintBrush size={26} color="#5c4033" weight="duotone" />
-              </div>
+              <img
+                src={`${import.meta.env.BASE_URL}assets/${a.img}`}
+                alt={a.label}
+                style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover' }}
+              />
               <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{a.label}</span>
             </button>
           ))}

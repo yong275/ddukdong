@@ -14,7 +14,7 @@ const TIPS = [
 
 const STATUS_MESSAGES = {
   pending: '동화를 준비하고 있어요...',
-  story_done: '이야기가 완성됐어요! 그림을 그리는 중...',
+  story_done: '이야기가 완성됐어요! 잠시 후 확인 화면으로 이동해요.',
   generating_images: '그림을 그리기 시작했어요...',
   image_done: '그림이 완성됐어요! 마무리 중...',
   completed: '동화가 완성됐어요!',
@@ -83,6 +83,7 @@ export default function LoadingPage() {
       } else if (s === 'completed') {
         clearInterval(intervalRef.current);
         sessionStorage.removeItem('job_id');
+        sessionStorage.removeItem('image_phase');
         setTimeout(() => navigate(`/viewer/${story_id}`), 600);
       } else if (s === 'failed') {
         clearInterval(intervalRef.current);
@@ -110,7 +111,13 @@ export default function LoadingPage() {
   const pctDeg = `${pct}%`;
 
   const handleRetry = () => {
-    navigate('/create');
+    const isImagePhase = sessionStorage.getItem('image_phase') === 'true';
+    if (isImagePhase) {
+      sessionStorage.removeItem('image_phase');
+      navigate('/story-check');
+    } else {
+      navigate('/create');
+    }
   };
 
   return (

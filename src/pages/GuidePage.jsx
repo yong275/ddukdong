@@ -1,5 +1,4 @@
 ﻿import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   SparkleIcon,
   UserCirclePlus,
@@ -27,7 +26,7 @@ const STEPS = [
     num: '03',
     icon: <PaintBrushBroad size={40} weight="duotone" />,
     title: '그림체를 선택해요',
-    desc: '수채화, 카툰, 동화, 애니메이션 중\n취향에 맞는 스타일로 동화를 완성해요.',
+    desc: '심플동화, 수채화, 종이공예, 색연필 중\n취향에 맞는 스타일로 동화를 완성해요.',
   },
   {
     num: '04',
@@ -53,7 +52,6 @@ const FAQS = [
 ];
 
 export default function GuidePage() {
-  const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
 
   return (
@@ -181,36 +179,6 @@ export default function GuidePage() {
               )}
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── CTA ── */}
-      <section className="wrap" style={{ paddingBottom: 80 }}>
-        <div style={{
-          background: 'var(--primary)', borderRadius: 'var(--radius-card-lg)',
-          padding: '52px 40px', textAlign: 'center',
-          boxShadow: '0 8px 28px rgba(255,219,77,0.35)',
-        }}>
-          <h2 style={{
-            fontSize: 'var(--fs-h1)', fontWeight: 'var(--fw-black)',
-            color: 'var(--text-on-primary)', margin: '0 0 16px', lineHeight: 'var(--lh-heading)',
-          }}>
-            지금, 우리 아이만의 동화를<br />뚝딱 만들어보세요
-          </h2>
-          <p style={{ color: 'var(--text-on-primary)', opacity: 0.75, marginBottom: 32, fontSize: 'var(--fs-lead)' }}>
-            무료로 시작할 수 있어요
-          </p>
-          <button
-            onClick={() => navigate('/create')}
-            style={{
-              background: 'var(--text-on-primary)', color: 'var(--primary)',
-              border: 'none', borderRadius: 'var(--radius-pill)',
-              padding: '15px 40px', fontSize: 16, fontWeight: 'var(--fw-bold)',
-              cursor: 'pointer',
-            }}
-          >
-            동화 만들기
-          </button>
         </div>
       </section>
 

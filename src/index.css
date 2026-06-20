@@ -164,6 +164,33 @@ img { max-width: 100%; }
   font-weight: 900; font-size: 26px;
 }
 
-@media (max-width: 760px) {
-  .feature-row { grid-template-columns: 1fr !important; }
+/* ── Responsive grid helpers ─────────────────── */
+.grid-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+.grid-3    { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: start; }
+.grid-3-feat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.grid-5    { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.grid-5-lib { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; align-items: start; }
+
+@media (max-width: 960px) {
+  .grid-hero   { gap: 32px; }
+  .grid-3-feat { grid-template-columns: repeat(2, 1fr); }
+  .grid-5      { grid-template-columns: repeat(3, 1fr); }
+  .grid-5-lib  { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
 }
+
+@media (max-width: 600px) {
+  .wrap        { padding-left: 16px; padding-right: 16px; }
+  .story-actions { flex-direction: column !important; }
+  .story-actions .regen-btn { width: 100%; justify-content: center; }
+  .page-content-row { flex-direction: column !important; }
+  .page-content-row .edit-btn { align-self: flex-end; }
+  .grid-hero   { grid-template-columns: 1fr; gap: 24px; text-align: center; }
+  .grid-hero .hero-btns { justify-content: center; }
+  .grid-3      { grid-template-columns: repeat(2, 1fr); }
+  .grid-3-feat { grid-template-columns: 1fr; }
+  .grid-5      { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .grid-5-lib  { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+}
+

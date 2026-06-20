@@ -71,6 +71,7 @@ export default function StoryCheckPage() {
     setConfirming(true);
     try {
       await axios.post(`/v1/stories/${jobId}/confirm`, { pages });
+      sessionStorage.setItem('image_phase', 'true');
       navigate('/loading');
     } catch (e) {
       alert(e?.response?.data?.error || '확정에 실패했어요.');
@@ -155,14 +156,14 @@ export default function StoryCheckPage() {
                   {/* 펼쳐진 내용 */}
                   {open && (
                     <div style={{ padding: '0 20px 20px', borderTop: '1.5px solid var(--border)' }}>
-                      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', paddingTop: 16, flexWrap: 'wrap' }}>
+                      <div className="page-content-row" style={{ display: 'flex', gap: 14, alignItems: 'flex-start', paddingTop: 16, flexWrap: 'wrap' }}>
                         {!isDemo && editing ? (
                           <>
                             <textarea
                               value={text}
                               onChange={e => setPageText(i, e.target.value)}
                               style={{
-                                flex: 1, minWidth: 240, minHeight: 100,
+                                flex: 1, minWidth: 0, minHeight: 100,
                                 background: 'var(--bg)', border: '1.5px solid var(--border)',
                                 borderRadius: 12, padding: '12px 16px',
                                 fontSize: 15, lineHeight: 1.8, color: 'var(--text)',
@@ -180,11 +181,12 @@ export default function StoryCheckPage() {
                           </>
                         ) : (
                           <>
-                            <p style={{ flex: 1, minWidth: 240, margin: 0, fontSize: 15, lineHeight: 1.9, color: 'var(--text)', whiteSpace: 'pre-line' }}>
+                            <p style={{ flex: 1, minWidth: 0, margin: 0, fontSize: 15, lineHeight: 1.9, color: 'var(--text)', whiteSpace: 'pre-line' }}>
                               {text}
                             </p>
                             {!isDemo && (
                               <button
+                                className="edit-btn"
                                 onClick={() => setEditIdx(i)}
                                 style={{
                                   flexShrink: 0, background: 'var(--surface)', color: 'var(--text)',
@@ -208,8 +210,9 @@ export default function StoryCheckPage() {
 
       {/* 하단 고정 액션 바 */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--nav-track)', borderTop: '1.5px solid var(--border)', zIndex: 30 }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(14px,2vw,18px) 24px', display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div className="story-actions" style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(14px,2vw,18px) 24px', display: 'flex', gap: 12, alignItems: 'center' }}>
           {!isDemo && <button
+            className="regen-btn"
             onClick={handleRegenerate}
             disabled={regenerating || regenerateCount >= MAX_REGEN}
             style={{

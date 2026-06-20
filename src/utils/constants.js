@@ -63,10 +63,10 @@ export const SETTINGS = [
 ];
 
 export const ART_STYLES = [
-  { value: 'fairytale', label: '동화책 스타일' },
+  { value: 'fairytale', label: '심플동화' },
   { value: 'watercolor', label: '수채화' },
-  { value: 'cartoon', label: '만화' },
-  { value: 'animation', label: '애니메이션' },
+  { value: 'cartoon', label: '종이공예' },
+  { value: 'animation', label: '색연필' },
 ];
 
 export const TIPS = [

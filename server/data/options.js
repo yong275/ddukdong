@@ -106,9 +106,9 @@ export const OPTIONS = {
   ],
 
   art_style: [
-    { label: '동화책 스타일', en: "children's book illustration, flat design, warm colors, gentle lines" },
+    { label: '심플동화', en: "simple children's book illustration, flat design, clean outlines, warm muted colors" },
     { label: '수채화', en: 'watercolor style, soft edges, pastel tones, gentle brush strokes' },
-    { label: '만화', en: 'cartoon style, bold outlines, vivid colors, expressive characters' },
-    { label: '애니메이션', en: 'vibrant animation style, clean lines, bright colors, modern illustration' },
+    { label: '종이공예', en: 'paper craft style, layered paper cutout, 3D paper art, soft drop shadows' },
+    { label: '색연필', en: 'colored pencil style, hand-drawn texture, soft hatching, warm tones' },
   ],
 };

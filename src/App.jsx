@@ -1,6 +1,7 @@
 ﻿import { HashRouter as BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Header from './components/layout/Header';
+import BottomNav from './components/layout/BottomNav';
 import MainPage from './pages/MainPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -12,6 +13,7 @@ import ViewerPage from './pages/ViewerPage';
 import MyPage from './pages/MyPage';
 import GuidePage from './pages/GuidePage';
 import { ToastProvider } from './components/common/Toast';
+import ScrollToTop from './components/common/ScrollToTop';
 import { supabase } from './api/axios';
 import useOptionsStore from './store/optionsStore';
 
@@ -37,8 +39,9 @@ export default function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Header />
-        <main>
+        <main className="sm:pb-0 pb-16">
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -52,6 +55,7 @@ export default function App() {
             <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
           </Routes>
         </main>
+        <BottomNav />
       </BrowserRouter>
     </ToastProvider>
   );
