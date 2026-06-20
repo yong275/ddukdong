@@ -10,6 +10,7 @@ import useGenerateStore from '../store/generateStore';
 import axios from '../api/axios';
 import useOptionsStore from '../store/optionsStore';
 import useAuthStore from '../store/authStore';
+import { SAMPLE_BOOKS } from '../utils/constants';
 import { AGE_OPTIONS } from '../utils/constants';
 
 /* ── 상수 ─────────────────────────────────────── */
@@ -368,13 +369,13 @@ function Step2({ store }) {
                 borderColor: artStyle === a.label ? 'var(--primary)' : 'var(--border)',
                 background: artStyle === a.label ? 'var(--primary)' : 'var(--surface)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                transition: 'all .18s', fontFamily: 'inherit',
+                transition: 'all .18s', fontFamily: 'inherit', padding: '12px 12px',
               }}
             >
               <img
                 src={`${import.meta.env.BASE_URL}assets/${a.img}`}
                 alt={a.label}
-                style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover' }}
+                style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: 12, objectFit: 'cover', display: 'block' }}
               />
               <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{a.label}</span>
             </button>
@@ -407,9 +408,6 @@ function Step2({ store }) {
 }
 
 /* ── 메인 컴포넌트 ─────────────────────────────── */
-const DEMO_PICK_MAP = {
-  '심플동화': 's1', '수채화': 's2', '종이공예': 's4', '색연필': 's1',
-};
 
 export default function GeneratePage() {
   const navigate = useNavigate();
@@ -431,7 +429,8 @@ export default function GeneratePage() {
     // 비로그인: 데모 모드로 샘플 동화 보여주기
     if (!user) {
       sessionStorage.setItem('demo_mode', 'true');
-      sessionStorage.setItem('demo_pick', DEMO_PICK_MAP[store.artStyle] || 's1');
+      const randomSample = SAMPLE_BOOKS[Math.floor(Math.random() * SAMPLE_BOOKS.length)];
+      sessionStorage.setItem('demo_pick', randomSample.id);
       navigate('/story-check');
       return;
     }
