@@ -364,12 +364,12 @@ function Step2({ store }) {
               key={a.label}
               onClick={() => setArtStyle(a.label, a.en)}
               style={{
-                padding: '20px 16px', borderRadius: 16, cursor: 'pointer',
+                padding: '12px', borderRadius: 16, cursor: 'pointer',
                 border: '2px solid',
                 borderColor: artStyle === a.label ? 'var(--primary)' : 'var(--border)',
                 background: artStyle === a.label ? 'var(--primary)' : 'var(--surface)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                transition: 'all .18s', fontFamily: 'inherit', padding: '12px 12px',
+                transition: 'all .18s', fontFamily: 'inherit',
               }}
             >
               <img
