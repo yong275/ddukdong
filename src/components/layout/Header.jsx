@@ -118,7 +118,7 @@ export default function Header() {
         <div className="flex items-center gap-1">
           {/* Guide toggle */}
           <button
-            onClick={() => setGuideOpen(o => !o)}
+            onClick={() => setGuideOpen(!guideOpen)}
             title="이용안내"
             className={[
               'p-2 rounded-full transition-colors cursor-pointer',
@@ -212,21 +212,22 @@ export default function Header() {
         position: 'fixed', top: 56, left: 0, right: 0, bottom: 0, zIndex: 90,
         background: 'var(--bg)', overflowY: 'auto',
       }}>
-        {/* X 닫기 버튼 */}
-        <button
-          onClick={() => setGuideOpen(false)}
-          style={{
-            position: 'fixed', top: 68, right: 16, zIndex: 91,
-            width: 40, height: 40, borderRadius: '50%',
-            background: 'var(--surface)', border: '1.5px solid var(--border)',
-            boxShadow: 'var(--shadow-card)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: 'var(--text)',
-          }}
-          title="닫기"
-        >
-          <X size={20} />
-        </button>
+        {/* X 닫기 버튼 — 콘텐츠 너비 안에 배치 */}
+        <div style={{ maxWidth: '64rem', margin: '0 auto', padding: '12px 20px', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => setGuideOpen(false)}
+            style={{
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'var(--surface)', border: '1.5px solid var(--border)',
+              boxShadow: 'var(--shadow-card)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: 'var(--text)',
+            }}
+            title="닫기"
+          >
+            <X size={20} />
+          </button>
+        </div>
         <GuidePage />
       </div>
     )}
