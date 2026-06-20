@@ -47,8 +47,8 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/guide" element={<GuidePage />} />
-            <Route path="/create" element={<ProtectedRoute><GeneratePage /></ProtectedRoute>} />
-            <Route path="/story-check" element={<ProtectedRoute><StoryCheckPage /></ProtectedRoute>} />
+            <Route path="/create" element={<GeneratePage />} />
+            <Route path="/story-check" element={<StoryCheckPage />} />
             <Route path="/loading" element={<ProtectedRoute><LoadingPage /></ProtectedRoute>} />
             <Route path="/library" element={<LibraryPage />} />
             <Route path="/viewer/:story_id" element={<ViewerPage />} />
