@@ -26,10 +26,10 @@ const BG_OPTIONS = [
 ];
 
 const ART_STYLES = [
-  { value: 'fairytale', label: '심플동화', desc: '따뜻하고 심플한 동화 삽화', img: 'flat_storybook.png' },
-  { value: 'watercolor', label: '수채화', desc: '부드럽고 몽환적인 수채화', img: 'watercolor.png' },
-  { value: 'cartoon', label: '종이공예', desc: '입체적인 종이공예 스타일', img: 'layered_paper.png' },
-  { value: 'animation', label: '색연필', desc: '따뜻한 색연필 드로잉 스타일', img: 'colorpencle.png' },
+  { value: 'fairytale', label: '심플동화', desc: '따뜻하고 심플한 동화 삽화', img: 'flat_storybook.webp' },
+  { value: 'watercolor', label: '수채화', desc: '부드럽고 몽환적인 수채화', img: 'watercolor.webp' },
+  { value: 'cartoon', label: '종이공예', desc: '입체적인 종이공예 스타일', img: 'layered_paper.webp' },
+  { value: 'animation', label: '색연필', desc: '따뜻한 색연필 드로잉 스타일', img: 'colorpencle.webp' },
 ];
 
 const ART_PALETTE = {
