@@ -9,6 +9,7 @@ import {
 import useGenerateStore from '../store/generateStore';
 import axios from '../api/axios';
 import useOptionsStore from '../store/optionsStore';
+import useAuthStore from '../store/authStore';
 import { AGE_OPTIONS } from '../utils/constants';
 
 /* ── 상수 ─────────────────────────────────────── */
@@ -406,9 +407,14 @@ function Step2({ store }) {
 }
 
 /* ── 메인 컴포넌트 ─────────────────────────────── */
+const DEMO_PICK_MAP = {
+  '심플동화': 's1', '수채화': 's2', '종이공예': 's4', '색연필': 's1',
+};
+
 export default function GeneratePage() {
   const navigate = useNavigate();
   const store = useGenerateStore();
+  const user = useAuthStore(s => s.user);
   const [step, setStep] = useState(0);
   const [generating, setGenerating] = React.useState(false);
 
@@ -421,6 +427,14 @@ export default function GeneratePage() {
 
   const handleNext = async () => {
     if (step < 2) { setStep(s => s + 1); return; }
+
+    // 비로그인: 데모 모드로 샘플 동화 보여주기
+    if (!user) {
+      sessionStorage.setItem('demo_mode', 'true');
+      sessionStorage.setItem('demo_pick', DEMO_PICK_MAP[store.artStyle] || 's1');
+      navigate('/story-check');
+      return;
+    }
 
     setGenerating(true);
     try {

@@ -106,9 +106,9 @@ export const OPTIONS = {
   ],
 
   art_style: [
-    { label: '심플동화', en: "simple children's book illustration, flat design, clean outlines, warm muted colors" },
-    { label: '수채화', en: 'watercolor style, soft edges, pastel tones, gentle brush strokes' },
-    { label: '종이공예', en: 'paper craft style, layered paper cutout, 3D paper art, soft drop shadows' },
-    { label: '색연필', en: 'colored pencil style, hand-drawn texture, soft hatching, warm tones' },
+    { label: '심플동화', en: "simple children's book illustration, flat design, clean outlines, warm muted colors", img: 'flat_storybook.webp' },
+    { label: '수채화', en: 'watercolor style, soft edges, pastel tones, gentle brush strokes', img: 'watercolor.webp' },
+    { label: '종이공예', en: 'paper craft style, layered paper cutout, 3D paper art, soft drop shadows', img: 'layered_paper.webp' },
+    { label: '색연필', en: 'colored pencil style, hand-drawn texture, soft hatching, warm tones', img: 'colorpencle.webp' },
   ],
 };
