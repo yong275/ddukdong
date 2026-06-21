@@ -88,7 +88,7 @@ export default function Header() {
         </button>
 
         {/* Nav pills - centered (PC/태블릿만) */}
-        <nav className="absolute left-1/2 -translate-x-1/2 hidden sm:flex items-center gap-1">
+        <nav className="absolute left-1/2 -translate-x-1/2 hidden sm:flex items-center gap-16">
           {NAV.map((item) => {
             const active =
               item.path === '/'
@@ -99,7 +99,7 @@ export default function Header() {
                 key={item.key}
                 onClick={() => navigate(item.path)}
                 className={[
-                  'px-4 py-1.5 rounded-full text-sm font-semibold transition-colors cursor-pointer',
+                  'px-7 py-2.5 rounded-full text-base font-semibold transition-colors cursor-pointer whitespace-nowrap',
                   active
                     ? 'bg-[--primary] text-[--text-on-primary]'
                     : 'text-[--text-muted] hover:text-[--text] hover:bg-[--surface-sunk]',

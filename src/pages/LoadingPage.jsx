@@ -12,106 +12,126 @@ const TIPS = [
   'Solar AI가 한국어로 이야기를 쓰고, DALL·E가 그림을 그려요.',
 ];
 
-const STATUS_MESSAGES = {
-  pending: '동화를 준비하고 있어요...',
-  story_done: '이야기가 완성됐어요! 잠시 후 확인 화면으로 이동해요.',
-  generating_images: '그림을 그리기 시작했어요...',
-  image_done: '그림이 완성됐어요! 마무리 중...',
-  completed: '동화가 완성됐어요!',
-  failed: '생성 중 오류가 발생했어요.',
-};
-
-const STATUS_PCT = {
-  pending: 15,
-  story_done: 45,
-  generating_images: 50,
-  image_done: 80,
-  completed: 100,
-  failed: 0,
-};
+function getMsg(pct, isImagePhase) {
+  if (isImagePhase) {
+    if (pct < 65) return '그림 준비 중이에요...';
+    if (pct < 85) return '그림을 그리고 있어요...';
+    if (pct < 100) return '색을 입히고 있어요...';
+    return '동화가 완성됐어요!';
+  } else {
+    if (pct < 30) return '이야기 구조를 잡고 있어요...';
+    if (pct < 70) return '동화를 쓰고 있어요...';
+    if (pct < 100) return '마무리 손질 중이에요...';
+    return '이야기가 완성됐어요!';
+  }
+}
 
 export default function LoadingPage() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState('pending');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [tipIdx, setTipIdx] = useState(0);
-  const intervalRef = useRef(null);
-  const tipIntervalRef = useRef(null);
+  const isImagePhaseRef = useRef(
+    sessionStorage.getItem('image_phase') === 'true' ||
+    sessionStorage.getItem('demo_phase') === 'image'
+  );
+  const isImagePhase = isImagePhaseRef.current;
+  const isDemo      = sessionStorage.getItem('demo_mode')   === 'true';
+  const jobId       = sessionStorage.getItem('job_id');
 
-  const jobId = sessionStorage.getItem('job_id');
-  const isDemo = sessionStorage.getItem('demo_mode') === 'true';
+  const [fakePct,    setFakePct]    = useState(0);
+  const [errorMsg,   setErrorMsg]   = useState('');
+  const [tipIdx,     setTipIdx]     = useState(0);
+  const [readyToNav, setReadyToNav] = useState(false);
+  const [navTarget,  setNavTarget]  = useState(null);
 
-  const poll = async () => {
-    if (isDemo) {
-      const demoPhase = sessionStorage.getItem('demo_phase') || 'story';
-      const samples = ['s1', 's2', 's3', 's4', 's5'];
-      const pick = sessionStorage.getItem('demo_pick') || samples[Math.floor(Math.random() * samples.length)];
-      sessionStorage.setItem('demo_pick', pick);
-      let pct = 0;
-      const targetPct = demoPhase === 'story' ? 50 : 100;
-      const timer = setInterval(() => {
-        pct += Math.floor(Math.random() * 15) + 5;
-        if (pct >= targetPct) {
-          clearInterval(timer);
-          if (demoPhase === 'story') {
-            setStatus('story_done');
-            navigate('/story-check');
-          } else {
-            sessionStorage.removeItem('demo_mode');
-            sessionStorage.removeItem('demo_phase');
-            sessionStorage.removeItem('demo_pick');
-            navigate('/viewer/' + pick);
-          }
-        } else {
-          setStatus(pct < 40 ? 'pending' : 'story_done');
+  const pollRef = useRef(null);
+  const slowRef = useRef(null);
+  const fastRef = useRef(null);
+
+  /* ── 슬로우 fill ─────────────────────────────── */
+  useEffect(() => {
+    const cap = isImagePhase ? 88 : 44;
+    slowRef.current = setInterval(() => {
+      setFakePct(p => (p >= cap ? p : p + Math.floor(Math.random() * 2) + 1));
+    }, 700);
+    return () => clearInterval(slowRef.current);
+  }, [isImagePhase]);
+
+  /* ── 패스트 fill → 이동 ──────────────────────── */
+  useEffect(() => {
+    if (!readyToNav || !navTarget) return;
+    clearInterval(slowRef.current);
+    fastRef.current = setInterval(() => {
+      setFakePct(p => {
+        const next = Math.min(p + 7, 100);
+        if (next >= 100) {
+          clearInterval(fastRef.current);
+          setTimeout(() => navigate(navTarget, { replace: true }), 350);
         }
-      }, 600);
-      return;
+        return next;
+      });
+    }, 60);
+    return () => clearInterval(fastRef.current);
+  }, [readyToNav, navTarget, navigate]);
+
+  /* ── 폴링 / 데모 ─────────────────────────────── */
+  useEffect(() => {
+    if (isDemo) {
+      const delay = isImagePhase ? 4500 : 3500;
+      const t = setTimeout(() => {
+        if (isImagePhase) {
+          const pick = sessionStorage.getItem('demo_pick') || 's1';
+          sessionStorage.removeItem('demo_mode');
+          sessionStorage.removeItem('demo_phase');
+          sessionStorage.removeItem('demo_pick');
+          setNavTarget('/viewer/' + pick);
+        } else {
+          sessionStorage.setItem('demo_phase', 'image');
+          setNavTarget('/story-check');
+        }
+        setReadyToNav(true);
+      }, delay);
+      return () => clearTimeout(t);
     }
+
     if (!jobId) {
-      setStatus('failed');
       setErrorMsg('작업 ID를 찾을 수 없어요. 다시 시도해 주세요.');
       return;
     }
-    try {
-      const res = await axios.get(`/v1/stories/jobs/${jobId}`);
-      const { status: s, story_id } = res.data;
-      setStatus(s);
-      if (s === 'story_done') {
-        clearInterval(intervalRef.current);
-        navigate('/story-check');
-      } else if (s === 'completed') {
-        clearInterval(intervalRef.current);
-        sessionStorage.removeItem('job_id');
-        sessionStorage.removeItem('image_phase');
-        setTimeout(() => navigate(`/viewer/${story_id}`), 600);
-      } else if (s === 'failed') {
-        clearInterval(intervalRef.current);
-        setErrorMsg(res.data?.error_message || res.data?.message || '동화 생성에 실패했어요.');
-      }
-    } catch (e) {
-      // 네트워크 오류는 무시하고 계속 폴링
-    }
-  };
 
-  useEffect(() => {
-    poll();
-    intervalRef.current = setInterval(poll, 3000);
-    tipIntervalRef.current = setInterval(() => {
-      setTipIdx(i => (i + 1) % TIPS.length);
-    }, 4000);
-    return () => {
-      clearInterval(intervalRef.current);
-      clearInterval(tipIntervalRef.current);
+    const poll = async () => {
+      try {
+        const res = await axios.get(`/v1/stories/jobs/${jobId}`);
+        const { status: s, story_id } = res.data;
+        if (s === 'story_done' && !isImagePhase) {
+          clearInterval(pollRef.current);
+          setNavTarget('/story-check');
+          setReadyToNav(true);
+        } else if (s === 'completed') {
+          clearInterval(pollRef.current);
+          sessionStorage.removeItem('job_id');
+          sessionStorage.removeItem('image_phase');
+          setNavTarget(`/viewer/${story_id}`);
+          setReadyToNav(true);
+        } else if (s === 'failed') {
+          clearInterval(pollRef.current);
+          setErrorMsg(res.data?.error_message || '동화 생성에 실패했어요.');
+        }
+      } catch {
+        // 네트워크 오류 무시, 계속 폴링
+      }
     };
+
+    poll();
+    pollRef.current = setInterval(poll, 3000);
+    return () => clearInterval(pollRef.current);
   }, []);
 
-  const pct = STATUS_PCT[status] || 0;
-  const msg = STATUS_MESSAGES[status] || '처리 중...';
-  const pctDeg = `${pct}%`;
+  /* ── 팁 로테이션 ─────────────────────────────── */
+  useEffect(() => {
+    const t = setInterval(() => setTipIdx(i => (i + 1) % TIPS.length), 4000);
+    return () => clearInterval(t);
+  }, []);
 
   const handleRetry = () => {
-    const isImagePhase = sessionStorage.getItem('image_phase') === 'true';
     if (isImagePhase) {
       sessionStorage.removeItem('image_phase');
       navigate('/story-check');
@@ -119,6 +139,8 @@ export default function LoadingPage() {
       navigate('/create');
     }
   };
+
+  const msg = getMsg(fakePct, isImagePhase);
 
   return (
     <div style={{
@@ -138,35 +160,35 @@ export default function LoadingPage() {
               fontSize: 72, boxShadow: '0 8px 24px rgba(255,219,77,0.35)',
             }}
           >
-            📖
+            {isImagePhase ? '🎨' : '📖'}
           </div>
         </div>
 
         {/* 제목 */}
         <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8, color: 'var(--text)' }}>
-          동화를 만들고 있어요
+          {isImagePhase ? '그림을 그리고 있어요' : '동화를 만들고 있어요'}
         </h1>
 
         {/* 상태 메시지 */}
         <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 32, minHeight: 22 }}>
-          {msg}
+          {errorMsg || msg}
         </p>
 
         {/* 원형 진행률 */}
-        {status !== 'failed' && (
+        {!errorMsg && (
           <div
             className="loader-ring"
-            style={{ '--pct': pctDeg }}
+            style={{ '--pct': `${fakePct}%` }}
           >
             <div className="inner">
-              {pct}
+              {fakePct}
               <span style={{ fontSize: 13, fontWeight: 500 }}>%</span>
             </div>
           </div>
         )}
 
         {/* 에러 */}
-        {status === 'failed' && (
+        {errorMsg && (
           <div style={{ marginTop: 8 }}>
             <div style={{
               padding: '14px 18px', borderRadius: 14,
@@ -175,7 +197,7 @@ export default function LoadingPage() {
               marginBottom: 20, textAlign: 'left',
             }}>
               <WarningCircle size={20} />
-              {errorMsg || '생성 중 오류가 발생했어요.'}
+              {errorMsg}
             </div>
             <button
               onClick={handleRetry}
@@ -193,7 +215,7 @@ export default function LoadingPage() {
         )}
 
         {/* 팁 카드 */}
-        {status !== 'failed' && (
+        {!errorMsg && (
           <div style={{
             marginTop: 40, padding: '16px 20px',
             background: 'var(--surface)', borderRadius: 14,
@@ -203,7 +225,7 @@ export default function LoadingPage() {
             <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary)', marginBottom: 6, letterSpacing: .5 }}>
               💡 TIP
             </p>
-            <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.65, transition: 'opacity .3s' }}>
+            <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.65 }}>
               {TIPS[tipIdx]}
             </p>
           </div>

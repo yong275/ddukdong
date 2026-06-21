@@ -160,33 +160,108 @@ function CharCard({ char, idx, onChange, onRemove, isMain }) {
   );
 }
 
-/* ── Step 0 ─────────────────────────────────────── */
-function Step0({ store }) {
-  const { input_mode, chars, age, setInputMode, setAge, updateChar, addChar, removeChar } = store;
+/* ── 모드 선택 오버레이 ──────────────────────────── */
+function ModeModal({ onConfirm, onClose }) {
+  const [mode, setMode] = useState('parent');
+
+  const MODES = [
+    { value: 'parent', label: '부모', sub: '아이를 위해\n동화를 만들어요' },
+    { value: 'child',  label: '아이',  sub: '내가 주인공인\n동화를 만들어요' },
+  ];
 
   return (
-    <div className="fade" style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-      {/* 모드 토글 */}
-      <div style={{ display: 'flex', gap: 8, alignSelf: 'flex-end' }}>
-        {[{ label: '아이 입력', value: 'child' }, { label: '부모 입력', value: 'parent' }].map(m => (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 50,
+      background: 'var(--bg)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: 'clamp(20px, 5vw, 48px) 20px',
+      gap: 'clamp(20px, 4vw, 36px)',
+    }}>
+      <div style={{ textAlign: 'center', position: 'relative', width: '100%', maxWidth: 480 }}>
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 0, right: 0,
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'var(--surface)', border: '1.5px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: 'var(--text-muted)',
+          }}
+        >
+          <X size={18} />
+        </button>
+        <h2 style={{
+          fontSize: 'clamp(20px, 4vw, 28px)',
+          fontWeight: 900, color: 'var(--text)', marginBottom: 8,
+        }}>
+          누가 동화를 만들고 있나요?
+        </h2>
+        <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+          입력 방식이 달라져요
+        </p>
+      </div>
+
+      <div style={{
+        display: 'flex', gap: 16,
+        width: '100%', maxWidth: 480,
+      }}>
+        {MODES.map(m => (
           <button
             key={m.value}
-            onClick={() => setInputMode(m.value)}
-            className="pill"
+            onClick={() => setMode(m.value)}
             style={{
-              padding: '7px 18px', borderRadius: 999,
-              border: '1.5px solid',
-              borderColor: input_mode === m.value ? 'var(--primary)' : 'var(--border)',
-              background: input_mode === m.value ? 'var(--primary)' : 'var(--bg)',
-              color: 'var(--text)', fontWeight: 600, fontSize: 13,
-              cursor: 'pointer', transition: 'all .15s',
+              flex: 1,
+              minHeight: 'clamp(130px, 20vw, 180px)',
+              borderRadius: 20,
+              border: '2px solid',
+              borderColor: mode === m.value ? 'transparent' : 'var(--border)',
+              background: mode === m.value ? 'var(--text)' : 'var(--surface)',
+              color: mode === m.value ? 'var(--bg)' : 'var(--text-muted)',
+              cursor: 'pointer',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              gap: 10, transition: 'all .2s', fontFamily: 'inherit',
             }}
           >
-            {m.label}
+            <span style={{ fontSize: 'clamp(28px, 7vw, 48px)', fontWeight: 900 }}>
+              {m.label}
+            </span>
+            <span style={{
+              fontSize: 'clamp(11px, 2vw, 13px)',
+              opacity: 0.65, textAlign: 'center',
+              lineHeight: 1.5, whiteSpace: 'pre-line',
+            }}>
+              {m.sub}
+            </span>
           </button>
         ))}
       </div>
 
+      <button
+        onClick={() => onConfirm(mode)}
+        style={{
+          width: '100%', maxWidth: 480,
+          padding: 'clamp(13px, 3vw, 17px)',
+          borderRadius: 14, border: 'none',
+          background: 'var(--primary)',
+          color: 'var(--text)', fontWeight: 700,
+          fontSize: 'clamp(15px, 3vw, 17px)',
+          cursor: 'pointer',
+        }}
+      >
+        동화 만들기
+      </button>
+    </div>
+  );
+}
+
+/* ── Step 0 ─────────────────────────────────────── */
+function Step0({ store }) {
+  const { chars, age, setAge, updateChar, addChar, removeChar } = store;
+
+  return (
+    <div className="fade" style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       {/* 캐릭터 */}
       <div>
         <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, color: 'var(--text)' }}>등장인물</h3>
@@ -415,6 +490,12 @@ export default function GeneratePage() {
   const user = useAuthStore(s => s.user);
   const [step, setStep] = useState(0);
   const [generating, setGenerating] = React.useState(false);
+  const [showModeModal, setShowModeModal] = useState(true);
+
+  const handleModeConfirm = (mode) => {
+    store.setInputMode(mode);
+    setShowModeModal(false);
+  };
 
   const canNext = () => {
     if (step === 0) return store.chars[0]?.name && store.age;
@@ -431,7 +512,7 @@ export default function GeneratePage() {
       const DEMO_BY_STYLE = { fairytale: 's1', watercolor: 's2', cartoon: 's4', animation: 's5' };
       sessionStorage.setItem('demo_mode', 'true');
       sessionStorage.setItem('demo_pick', DEMO_BY_STYLE[store.artStyle] ?? 's1');
-      navigate('/story-check');
+      navigate('/loading');
       return;
     }
 
@@ -464,6 +545,7 @@ export default function GeneratePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: 60 }}>
+      {showModeModal && <ModeModal onConfirm={handleModeConfirm} onClose={() => navigate(-1)} />}
       <div className="wrap" style={{ maxWidth: 560, paddingTop: 40 }}>
         <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8, color: 'var(--text)' }}>
           동화 만들기
