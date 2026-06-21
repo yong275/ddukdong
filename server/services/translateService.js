@@ -52,3 +52,23 @@ export async function translateStory(story_id, lang = 'en') {
 
   return results;
 }
+
+export async function translateTexts(texts, lang = 'en') {
+  const combined = texts.map((t, i) => `[${i}] ${t}`).join('\n');
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: `You are a children's book translator. Translate each numbered line from Korean to ${lang === 'en' ? 'English' : lang}. Keep the same numbering format [N]. Keep the tone warm and simple, appropriate for children.`,
+      },
+      { role: 'user', content: combined },
+    ],
+  });
+  const translated = response.choices[0].message.content;
+  const lines = translated.split('\n').filter(l => l.trim());
+  return texts.map((_, i) => {
+    const match = lines.find(l => l.startsWith(`[${i}]`));
+    return match ? match.replace(`[${i}]`, '').trim() : '';
+  });
+}

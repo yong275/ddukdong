@@ -1,17 +1,20 @@
 import supabase from '../db/supabase.js';
+import sharp from 'sharp';
 
 const BUCKET = 'stories-images';
 
 export async function uploadImageFromBase64(b64, filePath) {
-  const buffer = Buffer.from(b64, 'base64');
+  const pngBuffer = Buffer.from(b64, 'base64');
+  const buffer = await sharp(pngBuffer).webp({ quality: 87 }).toBuffer();
+  const webpPath = filePath.replace(/\.png$/, '.webp');
 
   const { error } = await supabase.storage
     .from(BUCKET)
-    .upload(filePath, buffer, { contentType: 'image/png', upsert: true });
+    .upload(webpPath, buffer, { contentType: 'image/webp', upsert: true });
 
   if (error) throw new Error(`Storage 업로드 실패: ${error.message}`);
 
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(webpPath);
   return data.publicUrl;
 }
 

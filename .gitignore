@@ -4,3 +4,8 @@ server/node_modules/
 server/.env
 .vite/
 dist/
+server/test_*.js
+server/test_*.json
+server/login_result.json
+server/server.log
+server/server.err

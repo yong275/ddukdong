@@ -144,23 +144,22 @@ function ContentPage({ page, pageNum, totalPages, lang, onToggleLang, translatin
         }}>
           {text}
         </p>
-        {!compact && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
-            <button
-              onClick={onToggleLang}
-              disabled={translating}
-              style={{
-                background: 'var(--bg)', color: 'var(--text)',
-                border: '1.5px solid var(--border)', borderRadius: 12,
-                padding: '10px 20px', fontSize: 15, fontWeight: 700,
-                cursor: translating ? 'wait' : 'pointer', fontFamily: 'inherit',
-                opacity: translating ? 0.6 : 1,
-              }}
-            >
-              {translating ? '번역 중...' : lang === 'ko' ? 'English' : '한국어'}
-            </button>
-          </div>
-        )}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: compact ? 10 : 20 }}>
+          <button
+            onClick={onToggleLang}
+            disabled={translating}
+            style={{
+              background: 'var(--bg)', color: 'var(--text)',
+              border: '1.5px solid var(--border)', borderRadius: compact ? 8 : 12,
+              padding: compact ? '6px 12px' : '10px 20px',
+              fontSize: compact ? 12 : 15, fontWeight: 700,
+              cursor: translating ? 'wait' : 'pointer', fontFamily: 'inherit',
+              opacity: translating ? 0.6 : 1,
+            }}
+          >
+            {translating ? '...' : lang === 'ko' ? 'EN' : 'KO'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -289,12 +288,20 @@ export default function ViewerPage() {
 
     setTranslating(true);
     try {
-      const res = await axios.post(`/v1/stories/${story_id}/translate`, { lang: 'en' });
-      const transPages = res.data?.pages || [];
-      setPages(prev => prev.map(p => {
-        const t = transPages.find(tp => tp.id === p.id);
-        return t ? { ...p, text_translated: t.text_translated } : p;
-      }));
+      const isSample = story_id?.startsWith('s');
+      if (isSample) {
+        const texts = pages.map(p => p.text_ko || p.text || '');
+        const res = await axios.post('/v1/translate', { texts, lang: 'en' });
+        const translated = res.data?.texts || [];
+        setPages(prev => prev.map((p, i) => ({ ...p, text_translated: translated[i] || '' })));
+      } else {
+        const res = await axios.post(`/v1/stories/${story_id}/translate`, { lang: 'en' });
+        const transPages = res.data?.pages || [];
+        setPages(prev => prev.map(p => {
+          const t = transPages.find(tp => tp.id === p.id);
+          return t ? { ...p, text_translated: t.text_translated } : p;
+        }));
+      }
       setLang('en');
     } catch {
       alert('번역에 실패했어요. 잠시 후 다시 시도해주세요.');

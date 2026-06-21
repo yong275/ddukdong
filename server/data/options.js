@@ -46,61 +46,67 @@ export const OPTIONS = {
     {
       label: '친구',
       children: [
-        { label: '친구와 싸운 상황' },
-        { label: '친구를 처음 만난 상황' },
-        { label: '친구를 도와준 상황' },
+        { label: '친구와 다툰 상황' },
+        { label: '새 친구를 사귀고 싶은 상황' },
+        { label: '친구에게 질투가 난 상황' },
+        { label: '친구가 힘들어 보이는 상황' },
+      ],
+    },
+    {
+      label: '도전',
+      children: [
+        { label: '처음 해보는 게 두려운 상황' },
+        { label: '실수해서 속상한 상황' },
+        { label: '포기하고 싶은 상황' },
       ],
     },
     {
       label: '가족',
       children: [
-        { label: '동생이 태어난 상황' },
-        { label: '부모님과 갈등이 생긴 상황' },
-        { label: '가족 여행을 떠난 상황' },
+        { label: '동생과 다투는 상황' },
+        { label: '부모님 말씀이 싫은 상황' },
+        { label: '새 가족이 생긴 상황' },
       ],
     },
     {
-      label: '학교',
+      label: '마음',
       children: [
-        { label: '처음 학교에 간 상황' },
-        { label: '발표를 해야 하는 상황' },
-        { label: '선생님께 혼난 상황' },
+        { label: '욕심부리다 혼난 상황' },
+        { label: '거짓말로 곤란해진 상황' },
+        { label: '화가 나서 참기 힘든 상황' },
       ],
     },
   ],
 
   goal: [
     {
-      label: '생활태도',
-      children: [
-        { label: '정리정돈 하기' },
-        { label: '포기하지 않는 끈기' },
-        { label: '규칙을 지키는 습관' },
-        { label: '스스로 해보는 독립성' },
-      ],
-    },
-    {
-      label: '자신감·자아성장',
+      label: '용기·도전',
       children: [
         { label: '두려움을 이겨내는 용기' },
-        { label: '나만의 장점 발견하기' },
         { label: '실수해도 괜찮아' },
+        { label: '포기하지 않는 끈기' },
       ],
     },
     {
-      label: '예절',
-      children: [
-        { label: '감사한 마음 표현하기' },
-        { label: '어른께 공손하게 대하기' },
-        { label: '공공장소 예절 지키기' },
-      ],
-    },
-    {
-      label: '교우관계',
+      label: '관계',
       children: [
         { label: '사이좋게 나누고 양보하기' },
-        { label: '친구의 마음 이해하기' },
-        { label: '혼자가 아닌 함께하기' },
+        { label: '친구 마음 이해하기' },
+        { label: '먼저 화해하기' },
+      ],
+    },
+    {
+      label: '정직',
+      children: [
+        { label: '솔직하게 말하기' },
+        { label: '약속 지키기' },
+      ],
+    },
+    {
+      label: '감사·배려',
+      children: [
+        { label: '감사한 마음 표현하기' },
+        { label: '다른 사람 배려하기' },
       ],
     },
   ],

@@ -93,6 +93,19 @@ export const PAGE_TINTS = [
 
 export const SAMPLE_BOOKS = [
   {
+    id: 's0', created_at: '2026-06-22', title: '용왕님, 제 말 좀 들어주세요',
+    tint: '#cdebff', art_style: 'fairytale', illo: 'ocean', isSample: true,
+    cover_url: 'https://kfawmygamhcsfofsvrji.supabase.co/storage/v1/object/public/stories-images/ba0604d3-10c8-4594-b6f3-d08742032825/cover.webp',
+    pages: [
+      { id: 's0p1', page_number: 1, text_ko: '소율이의 소라껍질이 용왕님 왕관보다 더 반짝였어요. 물고기들이 소율을 왕녀라고 착각하며 절절맸어요.', image_url: 'https://kfawmygamhcsfofsvrji.supabase.co/storage/v1/object/public/stories-images/ba0604d3-10c8-4594-b6f3-d08742032825/page_1.webp', tint: '#cdebff' },
+      { id: 's0p2', page_number: 2, text_ko: '용왕님 앞에 선 소율이의 얼굴이 새파래졌어요. "이, 이건... 제 왕관이에요..." 소율이의 더듬대는 말에 용왕님의 수염이 부들부들 떨리기 시작했어요.', image_url: 'https://kfawmygamhcsfofsvrji.supabase.co/storage/v1/object/public/stories-images/ba0604d3-10c8-4594-b6f3-d08742032825/page_2.webp', tint: '#dff0ff' },
+      { id: 's0p3', page_number: 3, text_ko: '용왕님이 소율이의 소라껍질을 확 잡더니 "이 돌맹이가 왕관이냐!" 버럭 소리쳤어요. 소율이의 눈에 눈물이 그렁그렁 맺혔어요.', image_url: 'https://kfawmygamhcsfofsvrji.supabase.co/storage/v1/object/public/stories-images/ba0604d3-10c8-4594-b6f3-d08742032825/page_3.webp', tint: '#cdebff' },
+      { id: 's0p4', page_number: 4, text_ko: '소율이의 소라껍질이 "탁" 소리를 내며 산산조각 났어요. 소율이의 볼이 발개지며 "다 내 탓이야" 중얼거렸어요.', image_url: 'https://kfawmygamhcsfofsvrji.supabase.co/storage/v1/object/public/stories-images/ba0604d3-10c8-4594-b6f3-d08742032825/page_4.webp', tint: '#dff0ff' },
+      { id: 's0p5', page_number: 5, text_ko: '소율이의 진실된 사과에 용왕님이 고개를 끄덕이며 소라껍질을 새것처럼 복원했어요.', image_url: 'https://kfawmygamhcsfofsvrji.supabase.co/storage/v1/object/public/stories-images/ba0604d3-10c8-4594-b6f3-d08742032825/page_5.webp', tint: '#cdebff' },
+      { id: 's0p6', page_number: 6, text_ko: '용왕님이 소율에게 "진실의 소라"를 건넸어요. 새 소라껍질이 물속 햇살을 받아 환하게 빛나자 소율이의 얼굴에도 환한 미소가 번졌어요.', image_url: 'https://kfawmygamhcsfofsvrji.supabase.co/storage/v1/object/public/stories-images/ba0604d3-10c8-4594-b6f3-d08742032825/page_6.webp', tint: '#dff0ff' },
+    ],
+  },
+  {
     id: 's1', created_at: '2026-05-23', title: '도깨비 마을의 민준',
     tint: '#ffe6a3', art_style: 'fairytale', illo: 'hanok', isSample: true,
     pages: [
