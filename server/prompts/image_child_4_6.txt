@@ -17,11 +17,12 @@ Create one English image prompt for each story page. Target age: 만 4-6세.
 - gender: {gender}
 - art_style: {art_style}
 - setting: {setting}
+- character_desc: {character_desc}
 - story_pages: {story_pages}
 
 [Before you start]
-1. Decide the character's fixed appearance: hairstyle, outfit color, face.
-   Write "CHARACTER PROFILE: ..." and copy it into every page prompt.
+1. Use the character_desc provided above as the fixed character appearance.
+   Write "CHARACTER PROFILE: {character_desc}" and copy it into every page prompt exactly.
 2. Write "ART STYLE LOCK: {art_style}" and apply it to every page without exception.
 3. The character is {age} years old — always draw them as a child of that age.
 

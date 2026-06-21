@@ -14,76 +14,105 @@ ddukdong/
 ├── .gitignore
 ├── .env                        # 프론트 환경변수 (Vite가 읽음)
 ├── README.md
-├── 깃허브_협업가이드.md
 ├── docs/                       # 개발일지 (커밋·작업 단위별 기록)
 ├── package.json                # 프론트 패키지
 ├── vite.config.js
-├── index.html
-├── node_modules/
-├── .vite/
-├── src/                        # 프론트 소스코드 (React)
+├── index.html                  # OG 태그 포함
+├── public/
+│   └── assets/                 # og-image.png, 그림체 썸네일 webp 등
+├── src/
 │   ├── main.jsx
-│   ├── App.jsx                 # 라우팅 설정
-│   ├── index.css
+│   ├── App.jsx                 # 라우팅 설정 (HashRouter)
+│   ├── index.css               # 반응형 브레이크포인트 (960px / 600px)
 │   ├── pages/
-│   │   ├── MainPage.jsx        # 메인 (비로그인: 샘플 동화 / 로그인: 전체 기능)
+│   │   ├── MainPage.jsx        # 메인 (비로그인: 체험하기 / 로그인: 동화 만들기)
 │   │   ├── LoginPage.jsx
 │   │   ├── SignupPage.jsx
-│   │   ├── GeneratePage.jsx    # 동화 생성 입력 (부모/아이 모드)
-│   │   ├── StoryCheckPage.jsx  # 스토리 확인 (재생성 / 확정)
-│   │   ├── LoadingPage.jsx     # 생성 로딩 (진행 상태 멘트)
+│   │   ├── MyPage.jsx          # 마이페이지
+│   │   ├── GuidePage.jsx       # 이용안내 (Header 오버레이로 표시)
+│   │   ├── GeneratePage.jsx    # 동화 생성 입력 (3단계 + 모드 선택 오버레이)
+│   │   ├── StoryCheckPage.jsx  # 줄거리 확인 (재생성 / 확정)
+│   │   ├── LoadingPage.jsx     # 생성 로딩 (fakePct 슬로우+패스트 fill)
 │   │   ├── ViewerPage.jsx      # 동화 뷰어
-│   │   ├── LibraryPage.jsx     # 나의 서재
-│   │   └── SharePage.jsx       # 공유 링크 열람 (비로그인 읽기 전용)
+│   │   ├── LibraryPage.jsx     # 내 책장 (로그인 시 샘플 숨김)
+│   │   └── SharePage.jsx       # 공유 링크 열람 (미구현)
 │   ├── components/
-│   │   ├── common/             # Button, Input, Modal 등 공통 컴포넌트
-│   │   ├── generate/           # 입력 폼 단계별 컴포넌트
-│   │   ├── viewer/             # PageCard, NavArrow 등
-│   │   └── layout/             # Header, Footer 등
-│   ├── store/                  # Zustand 상태관리
-│   │   ├── authStore.js        # 로그인 상태
-│   │   └── generateStore.js    # 동화 생성 입력값 상태
-│   ├── api/                    # Axios API 호출 함수
-│   │   ├── axios.js            # 인스턴스 · JWT 인터셉터
+│   │   ├── common/
+│   │   │   ├── Badge.jsx
+│   │   │   ├── Button.jsx
+│   │   │   ├── ScrollToTop.jsx # 페이지 이동 시 자동 최상단
+│   │   │   └── Toast.jsx
+│   │   ├── illustrations/
+│   │   │   └── Illo.jsx        # SVG 일러스트 컴포넌트
+│   │   └── layout/
+│   │       ├── Header.jsx      # PC/태블릿 네비, 이용안내 오버레이, 유저 드롭다운
+│   │       ├── BottomNav.jsx   # 모바일 하단 탭바
+│   │       └── Footer.jsx
+│   ├── store/
+│   │   ├── authStore.js        # 로그인 상태 (Zustand)
+│   │   ├── generateStore.js    # 동화 생성 입력값 상태
+│   │   ├── guideStore.js       # 이용안내 오버레이 open 상태
+│   │   └── optionsStore.js     # 서버 선택지 캐싱 (/v1/options)
+│   ├── api/
+│   │   ├── axios.js            # Axios 인스턴스 · JWT 인터셉터 · supabase 클라이언트
 │   │   ├── auth.js
 │   │   ├── stories.js
 │   │   └── translate.js
 │   └── utils/
-│       ├── polling.js          # job 상태 폴링 로직 (3초 간격)
-│       └── constants.js        # 나이대·배경·주제 선택지 상수
-└── server/                     # 백엔드 (Express)
-    ├── .env                    # 서버 환경변수
+│       ├── constants.js        # NAV, AGE_OPTIONS, SAMPLE_BOOKS, ART_STYLES 등
+│       └── polling.js          # job 상태 폴링 유틸
+└── server/
+    ├── .env
     ├── package.json
-    ├── node_modules/
     ├── index.js                # Express 앱 진입점
     ├── routes/
-    │   ├── auth.js             # /auth/*
-    │   ├── users.js            # /users/*
-    │   ├── stories.js          # /stories/*
-    │   ├── translate.js        # /stories/:id/translate
-    │   └── share.js            # /share/*
+    │   ├── auth.js             # /v1/auth/*
+    │   ├── users.js            # /v1/users/*
+    │   ├── stories.js          # /v1/stories/*
+    │   ├── translate.js        # /v1/stories/:id/translate
+    │   ├── share.js            # /v1/share/*
+    │   └── options.js          # /v1/options (선택지 목록)
     ├── services/
-    │   ├── solarService.js     # Solar API 호출 · 프롬프트 조합
-    │   ├── dalleService.js     # DALL-E 3 병렬 이미지 생성 · 그림 프롬프트 조합
-    │   ├── pipelineService.js  # 동화 생성 파이프라인 전체
-    │   └── translateService.js # 번역 API 호출 · DB 캐싱
+    │   ├── solarService.js     # Solar API — plan→write 2단계 + 캐릭터 시트 생성
+    │   ├── dalleService.js     # gpt-4o-mini 이미지 프롬프트 생성 + gpt-image-1 이미지 생성
+    │   ├── pipelineService.js  # 동화 생성 전체 파이프라인
+    │   ├── translateService.js # 번역 (GPT-4o-mini) · DB 캐싱
+    │   └── pdfService.js       # PDF 내보내기
+    ├── data/
+    │   └── options.js          # 배경·상황·교훈·그림체 선택지 (en 번역 포함)
+    ├── prompts/                # AI 프롬프트 템플릿 (입력모드 × 나이대 × 단계)
+    │   ├── plan_parent_4_6.txt   # Solar: 동화 계획
+    │   ├── plan_parent_7_9.txt
+    │   ├── plan_parent_10_12.txt
+    │   ├── plan_child_4_6.txt
+    │   ├── plan_child_7_9.txt
+    │   ├── plan_child_10_12.txt
+    │   ├── write_parent_4_6.txt  # Solar: 본문 + 캐릭터 시트
+    │   ├── write_parent_7_9.txt
+    │   ├── write_parent_10_12.txt
+    │   ├── write_child_4_6.txt
+    │   ├── write_child_7_9.txt
+    │   ├── write_child_10_12.txt
+    │   ├── image_parent_4_6.txt  # gpt-4o-mini: 페이지별 이미지 프롬프트
+    │   ├── image_parent_7_9.txt
+    │   ├── image_parent_10_12.txt
+    │   ├── image_child_4_6.txt
+    │   ├── image_child_7_9.txt
+    │   └── image_child_10_12.txt
     ├── db/
-    │   ├── supabase.js         # Supabase 클라이언트 초기화
+    │   ├── supabase.js
     │   └── queries/
     │       ├── stories.js
     │       ├── pages.js
     │       └── users.js
     ├── middleware/
-    │   ├── auth.js             # JWT 검증 미들웨어
-    │   └── errorHandler.js     # 전역 에러 처리
-    ├── prompts/                # Solar API 스토리 프롬프트 템플릿
-    │   ├── story_parent_4_6.txt
-    │   ├── story_parent_7_9.txt
-    │   ├── story_parent_10_12.txt
-    │   └── story_child.txt     # 아이 입력 모드 (나이 구분 없음 · 교훈 없음)
+    │   ├── auth.js
+    │   └── errorHandler.js
     └── utils/
+        ├── jobStore.js         # 비동기 job 상태 관리 (Map)
         ├── storage.js          # Supabase Storage 이미지 업로드
-        └── jobStore.js         # 비동기 job 상태 관리 (Map)
+        ├── classifyError.js    # API 에러 분류
+        └── loadConfig.js
 ```
 
 ---
@@ -106,32 +135,23 @@ SUPABASE_SERVICE_KEY=
 PORT=3000
 ```
 
-### .gitignore
-```
-node_modules/
-server/node_modules/
-.env
-server/.env
-.vite/
-dist/
-```
-
 ---
 
 ## 기술 스택
 
 | 영역 | 기술 |
 |------|------|
-| 프론트엔드 | React 18, React Router v6, Zustand, Tailwind CSS, Axios |
-| 백엔드 | Express.js (Node.js) |
+| 프론트엔드 | React 18, React Router v6 (HashRouter), Zustand, Tailwind CSS (일부), Axios, @phosphor-icons/react |
+| 백엔드 | Express.js (Node.js, ESM) |
 | 인증 | Supabase Auth (이메일 + Google OAuth) |
 | DB | Supabase (PostgreSQL) |
 | 스토리지 | Supabase Storage (생성 이미지 저장) |
-| 텍스트 생성 | Solar API (Upstage) — 한국어 특화 LLM |
-| 이미지 생성 | DALL-E 3 (OpenAI) — 컷별 병렬 호출 |
-| 번역 | 미정 (DeepL 또는 Google Translate) — 2차 개발 |
-| 프론트 배포 | GitHub Pages |
-| 백엔드 배포 | Railway |
+| 동화 생성 | Solar API (Upstage, `solar-pro`) — plan→write 2단계, 캐릭터 시트 포함 |
+| 이미지 프롬프트 | GPT-4o-mini — 페이지별 영문 이미지 프롬프트 생성 |
+| 이미지 생성 | gpt-image-1 (OpenAI) — 커버 + 페이지 병렬 생성, quality: medium |
+| 번역 | GPT-4o-mini — DB 캐싱 |
+| 프론트 배포 | GitHub Pages (`npm run deploy`) |
+| 백엔드 배포 | Render (무료) |
 
 ---
 
@@ -141,7 +161,6 @@ dist/
 ```sql
 id            uuid PRIMARY KEY DEFAULT gen_random_uuid()
 email         text UNIQUE NOT NULL
-password_hash text
 nickname      text NOT NULL
 provider      text DEFAULT 'email'  -- 'email' | 'google'
 created_at    timestamptz DEFAULT now()
@@ -149,21 +168,23 @@ created_at    timestamptz DEFAULT now()
 
 ### stories
 ```sql
-id                uuid PRIMARY KEY DEFAULT gen_random_uuid()
-user_id           uuid REFERENCES users(id) ON DELETE CASCADE
-title             text
-input_mode        text        -- 'parent' | 'child'
-character_name    text
-character_gender  text
-sub_characters    jsonb       -- [{ name, gender }]
-age_group         text        -- '4-6' | '7-9' | '10-12'
-background        text
-situation         text
-moral             text        -- 부모 입력 모드에서만 사용
-art_style         text        -- 'fairytale' | 'watercolor' | 'cartoon' | 'animation'
-status            text DEFAULT 'pending'
-                              -- 'pending' | 'story_done' | 'image_done' | 'completed' | 'failed'
-created_at        timestamptz DEFAULT now()
+id                    uuid PRIMARY KEY DEFAULT gen_random_uuid()
+user_id               uuid REFERENCES users(id) ON DELETE CASCADE
+title                 text
+input_mode            text        -- 'parent' | 'child'
+character_name        text
+character_gender      text        -- 'male' | 'female'
+sub_characters        jsonb       -- [{ name, gender }]
+age_group             text        -- '4-6' | '7-9' | '10-12'
+background            text
+situation             text
+moral                 text        -- 부모 입력 모드에서만 사용
+art_style             text        -- 'fairytale' | 'watercolor' | 'cartoon' | 'animation'
+character_description jsonb       -- Solar가 생성한 캐릭터 외모 시트
+cover_url             text
+status                text DEFAULT 'pending'
+                                  -- 'pending' | 'story_done' | 'generating_images' | 'image_done' | 'completed' | 'failed'
+created_at            timestamptz DEFAULT now()
 ```
 
 ### pages
@@ -171,159 +192,127 @@ created_at        timestamptz DEFAULT now()
 id               uuid PRIMARY KEY DEFAULT gen_random_uuid()
 story_id         uuid REFERENCES stories(id) ON DELETE CASCADE
 page_number      int NOT NULL
-text_ko          text        -- 한국어 원문
-text_translated  text        -- 번역본 (없으면 null)
-translate_lang   text        -- 번역 언어 코드 ('en', 'ja' 등)
-image_url        text        -- Supabase Storage URL
+text_ko          text
+text_translated  text
+translate_lang   text
+image_url        text
 ```
+
+---
+
+## 동화 생성 파이프라인
+
+```
+POST /v1/stories/generate (requireAuth)
+  → job_id 즉시 반환 (202)
+  → 백그라운드 파이프라인 실행
+
+[1단계 — 이야기 생성] Solar API (solar-pro)
+  plan_*.txt → 동화 구조 계획 (JSON)
+  write_*.txt → 본문 + 캐릭터 시트 (JSON)
+    character: { hair, eyes, skin, outfit, features }
+    age_appearance은 코드에서 입력값 기반으로 고정 추가
+  status: story_done
+
+[사용자 확인] /story-check → 줄거리 확인 후 확정
+
+POST /v1/stories/:job_id/confirm
+  → stories + pages 테이블 insert
+
+[2단계 — 이미지 생성]
+  gpt-4o-mini: image_*.txt + 캐릭터 시트 → 페이지별 영문 이미지 프롬프트
+  gpt-image-1: 커버 1장 + 페이지 n장 병렬 생성 (Promise.all)
+    size: 1024×1024, quality: medium
+  Supabase Storage 업로드 → image_url 저장
+  status: completed
+```
+
+### Job 상태 흐름
+```
+pending → story_done → generating_images → image_done → completed | failed
+```
+
+### 나이대별 설정
+
+| 구간 | 글 분량 | 컷 수 | 프롬프트 파일 |
+|------|---------|-------|--------------|
+| 4–6세 | 1–2문장/페이지 | 6–8컷 | *_4_6.txt |
+| 7–9세 | 2–4문장/페이지 | 8–10컷 | *_7_9.txt |
+| 10–12세 | 3–6문장/페이지 | 10–14컷 | *_10_12.txt |
+| 아이 입력 | 나이대 별도 파일 | 나이대 동일 | *_child_*.txt |
+
+### 그림체 매핑
+
+| 프론트 value | 한국어 label | gpt-image-1 스타일 |
+|-------------|-------------|-------------------|
+| fairytale | 심플동화 | Modern Flat Storybook Illustration |
+| watercolor | 수채화 | Soft storybook watercolor |
+| cartoon | 종이공예 | Soft layered paper cut storybook |
+| animation | 색연필 | Soft colored pencil storybook illustration |
 
 ---
 
 ## API 엔드포인트
 
-Base URL: `http://localhost:3000/v1` (개발) / `https://api.ddukddak.com/v1` (운영)
+Base URL: `http://localhost:3000/v1` (개발) / `https://ddukdong.onrender.com/v1` (운영)
 인증: `Authorization: Bearer {supabase_jwt}`
 
-### 인증
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
 | POST | /auth/signup | 이메일 회원가입 | 불필요 |
-| POST | /auth/login | 이메일 로그인 → JWT 반환 | 불필요 |
-| POST | /auth/google | 구글 OAuth 로그인 | 불필요 |
-| POST | /auth/logout | 로그아웃 | 필요 |
-
-### 회원
-| 메서드 | 경로 | 설명 | 인증 |
-|--------|------|------|------|
+| POST | /auth/login | 이메일 로그인 | 불필요 |
 | GET | /users/me | 내 정보 조회 | 필요 |
 | PUT | /users/me | 닉네임 수정 | 필요 |
 | DELETE | /users/me | 회원 탈퇴 | 필요 |
-
-### 동화 생성 (비동기)
-| 메서드 | 경로 | 설명 | 인증 |
-|--------|------|------|------|
-| POST | /stories/generate | 동화 생성 요청 → job_id 즉시 반환 (202) | 필요 |
-| GET | /stories/jobs/:job_id | 생성 진행 상태 폴링 | 필요 |
-| POST | /stories/:story_id/confirm | 스토리 확정 · 서재 저장 | 필요 |
-| GET | /stories | 내 서재 목록 조회 | 필요 |
-| GET | /stories/:story_id | 동화 상세 조회 (pages 포함) | 필요 |
+| POST | /stories/generate | 동화 생성 요청 | 필요 |
+| GET | /stories/jobs/:job_id | 생성 상태 폴링 | 필요 |
+| POST | /stories/jobs/:job_id/regenerate | 줄거리 재생성 | 필요 |
+| POST | /stories/:job_id/confirm | 줄거리 확정 + 이미지 생성 시작 | 필요 |
+| GET | /stories | 내 동화 목록 | 필요 |
+| GET | /stories/:story_id | 동화 상세 (pages 포함) | 불필요 |
 | DELETE | /stories/:story_id | 동화 삭제 | 필요 |
-| GET | /stories/sample | 샘플 동화 목록 | 불필요 |
-
-### 번역 · 공유
-| 메서드 | 경로 | 설명 | 인증 |
-|--------|------|------|------|
-| POST | /stories/:story_id/translate | 번역 요청 · DB 캐싱 | 필요 |
-| GET | /share/:story_id | 공유 링크 열람 (읽기 전용) | 불필요 |
+| GET | /stories/:story_id/pdf | PDF 내보내기 | 불필요 |
+| POST | /stories/:story_id/translate | 번역 | 필요 |
+| GET | /options | 선택지 목록 | 불필요 |
 
 ---
 
-## 동화 생성 파이프라인 (비동기)
+## 반응형 브레이크포인트
 
-```
-POST /stories/generate
-  → job_id 즉시 반환 (202)
-  → 백그라운드에서 파이프라인 실행
+| 범위 | 구분 | 특징 |
+|------|------|------|
+| 960px+ | PC | 기본 레이아웃, Header 네비 표시 |
+| 600~960px | 태블릿 | 그리드 축소 |
+| ~600px | 모바일 | Header 네비 숨김, BottomNav 표시 |
 
-파이프라인 (pipelineService.js):
-  1. Solar API 호출 → 스토리 텍스트 + 이미지 프롬프트 JSON 생성
-     status: story_done
-  2. DALL-E 3 → 컷별 이미지 병렬 생성 (Promise.all)
-     status: image_done
-  3. Supabase Storage → 이미지 업로드 · URL 반환
-  4. stories + pages 테이블 insert
-     status: completed
-
-프론트 폴링 (polling.js):
-  GET /stories/jobs/:job_id (3초 간격)
-  status → 로딩 멘트 매핑:
-    pending     → "동화를 준비하고 있어요..."
-    story_done  → "이야기가 완성됐어요! 그림을 그리는 중..."
-    image_done  → "그림이 완성됐어요! 마무리 중..."
-    completed   → 뷰어로 자동 이동
-    failed      → 에러 메시지 + 재시도 버튼
-```
-
-## Solar API 응답 형식 (JSON)
-```json
-{
-  "title": "민준이의 용기",
-  "pages": [
-    {
-      "text": "민준이는 오늘 처음 학교에 갔어요.",
-      "image_prompt": "A 6-year-old Korean boy walking to school, watercolor style"
-    }
-  ]
-}
-```
-
-## DALL-E 그림 프롬프트 조합 (dalleService.js)
-```js
-const styleMap = {
-  watercolor: 'soft watercolor style',
-  cartoon:    'flat cartoon style',
-  fairytale:  'classic fairytale illustration',
-  animation:  'vibrant animation style'
-}
-const imagePrompt = `${scene}, ${styleMap[art_style]}, children's book illustration`
-```
+BottomNav는 `/story-check`, `/loading` 경로에서 숨김.
 
 ---
 
-## 나이대별 설정
+## sessionStorage 키 (동화 생성 흐름)
 
-| 구간 | 글 분량 | 컷 수 | 프롬프트 파일 |
-|------|---------|-------|--------------|
-| 4–6세 | 1–2문장/페이지 | 6컷 | story_parent_4_6.txt |
-| 7–9세 | 3–4문장/페이지 | 8컷 | story_parent_7_9.txt |
-| 10–12세 | 5–6문장/페이지 | 10컷 | story_parent_10_12.txt |
-| 아이 입력 | 나이대 무관 · 단순 | 6컷 | story_child.txt |
-
----
-
-## 화면 구조
-
-1. 메인 화면 — 비로그인: 샘플 동화 열람만 / 로그인: 전체 기능
-2. 로그인 / 회원가입
-3. 동화 생성 입력 — 부모 모드 (교훈 포함) / 아이 모드 (간소화 1단계)
-4. 스토리 확인 — 재생성 / 확정
-5. 동화 생성 로딩 — 진행 상태 멘트
-6. 동화 뷰어 — 페이지 이동 · 번역 · 공유 · 저장
-7. 나의 서재 — 저장된 동화 목록
-8. 공유 페이지 — 비로그인 읽기 전용
+| 키 | 값 | 용도 |
+|----|-----|------|
+| `job_id` | uuid | 생성 job 추적 |
+| `image_phase` | `'true'` | 이미지 생성 단계 진입 표시 |
+| `demo_mode` | `'true'` | 비로그인 데모 흐름 |
+| `demo_pick` | `'s1'~'s5'` | 데모 시 표시할 샘플 ID |
+| `demo_phase` | `'image'` | 데모 이미지 단계 표시 |
 
 ---
 
-## 브랜치 네이밍 예시
+## 배포 방법
 
-### 프론트엔드
-```
-feature/main-page
-feature/login-page
-feature/generate-form
-feature/story-viewer
-feature/library-page
-feature/loading-page
+```bash
+# 프론트
+npm run deploy          # 빌드 + gh-pages 브랜치 자동 배포
+
+# 백엔드
+# Render에 연결된 GitHub 리포 main 브랜치 push 시 자동 배포
 ```
 
-### 백엔드
-```
-feature/solar-api
-feature/dalle-api
-feature/auth-api
-feature/stories-api
-feature/pipeline
-```
-
-### 버그 수정
-```
-fix/image-url-null
-fix/login-redirect
-```
+프론트 배포 URL: https://yong275.github.io/ddukdong/
+백엔드 배포 URL: https://ddukdong.onrender.com
 
 ---
 
-## 2차 개발 (MVP 제외)
-- 성장형 동화 아카이브 (월별 연결)
-- 부모-아이 대화 질문 및 기록
-- TTS 읽어주기

@@ -34,19 +34,6 @@ function fillTemplate(template, input) {
     .replace(/{art_style}/g, input.art_style ?? '');
 }
 
-function makeCharacterFromInput(input) {
-  const ageMap = { '4-6': '5-year-old', '7-9': '8-year-old', '10-12': '11-year-old' };
-  const isMale = input.character_gender === 'male' || input.character_gender === '남자';
-  const genderStr = isMale ? 'boy' : 'girl';
-  return {
-    age_appearance: `${ageMap[input.age_group] || '7-year-old'} Korean ${genderStr}`,
-    hair: 'black hair',
-    eyes: 'dark brown eyes',
-    skin: 'warm beige',
-    outfit: 'casual children\'s clothing',
-    features: 'friendly smile, round face',
-  };
-}
 
 async function callSolar(systemPrompt, userPrompt) {
   const response = await solar.chat.completions.create({
@@ -71,11 +58,19 @@ export async function generateStory(input) {
 
     // Step 2: 계획 기반 본문 작성
     const writeTemplate = await loadPrompt('write', input_mode, age_group);
-    const writePrompt = writeTemplate.replace(/{story_plan}/g, JSON.stringify(plan, null, 2));
+    const writePrompt = fillTemplate(
+      writeTemplate.replace(/{story_plan}/g, JSON.stringify(plan, null, 2)),
+      input
+    );
     const story = await callSolar(writePrompt, '동화 본문을 JSON으로 작성해줘.');
 
-    // 캐릭터 외형 설명 (입력값 기반 생성)
-    story.character = makeCharacterFromInput(input);
+    // age_appearance는 입력값 기반으로 고정 (Solar가 나머지 외모 필드 생성)
+    const ageMap = { '4-6': '5-year-old', '7-9': '8-year-old', '10-12': '11-year-old' };
+    const isMale = input.character_gender === 'male' || input.character_gender === '남자';
+    story.character = {
+      age_appearance: `${ageMap[input.age_group] || '7-year-old'} Korean ${isMale ? 'boy' : 'girl'}`,
+      ...(story.character ?? {}),
+    };
 
     return story;
   } catch (err) {

@@ -39,9 +39,22 @@
 - fun_element가 "감동"이면 마음이 따뜻해지는 장면으로 써줘
 - 교훈은 직접 설명 금지. core_message가 행동과 결과로만 드러나게 해줘
 
+[캐릭터 외모 규칙]
+- character 필드는 반드시 영어로 작성해
+- 주인공 이름: {character_name} / 나이: {age}세 / 성별: {gender}
+- 이야기 배경·분위기에 어울리는 옷차림을 구체적으로 정해줘
+- 매 페이지 이미지에서 동일하게 유지될 외모이므로 일관되고 명확하게 써줘
+
 [출력 형식]
 {
   "title": "동화 제목",
+  "character": {
+    "hair": "short black straight hair",
+    "eyes": "dark brown, round and bright",
+    "skin": "warm beige",
+    "outfit": "light blue t-shirt, dark navy shorts, white sneakers",
+    "features": "round chubby face, friendly smile, rosy cheeks"
+  },
   "pages": [
     {
       "page_number": 1,

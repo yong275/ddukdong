@@ -35,20 +35,22 @@ async function loadImagePrompt(input_mode, age_group) {
   return fs.readFile(path.join(__dirname, '../prompts', file), 'utf-8');
 }
 
-function fillImageTemplate(template, input, storyPages) {
+function fillImageTemplate(template, input, storyPages, character) {
+  const charDesc = buildCharacterDesc(character);
   return template
     .replace(/{character_name}/g, input.character_name ?? '')
     .replace(/{age}/g, AGE_MIDPOINT[input.age_group] ?? input.age_group ?? '')
     .replace(/{gender}/g, input.character_gender ?? '')
     .replace(/{art_style}/g, input.art_style_en ?? input.art_style ?? DEFAULT_STYLE)
     .replace(/{setting}/g, input.setting_en ?? input.background ?? '')
+    .replace(/{character_desc}/g, charDesc)
     .replace(/{story_pages}/g, JSON.stringify(storyPages));
 }
 
 export async function generateAllImagePrompts(story, input) {
   const template = await loadImagePrompt(input.input_mode, input.age_group);
   const storyPages = story.pages.map((p, i) => ({ page_number: i + 1, text: p.text }));
-  const systemPrompt = fillImageTemplate(template, input, storyPages);
+  const systemPrompt = fillImageTemplate(template, input, storyPages, story.character);
 
   try {
     const res = await openai.chat.completions.create({
