@@ -80,7 +80,7 @@ export default function Header() {
         {/* Logo */}
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 font-extrabold text-[--primary] text-lg tracking-tight cursor-pointer"
+          className="flex items-center gap-2 font-extrabold text-[--text] text-xl tracking-tight cursor-pointer"
           aria-label="홈으로"
         >
           <BookOpenText size={26} weight="fill" />

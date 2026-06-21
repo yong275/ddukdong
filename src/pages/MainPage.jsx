@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import useGuideStore from '../store/guideStore';
 import useAuthStore from '../store/authStore';
 import { Sparkle, UserCirclePlus, SlidersHorizontal, PaintBrushBroad } from '@phosphor-icons/react';
@@ -32,6 +33,14 @@ export default function MainPage() {
   const navigate = useNavigate();
   const setGuideOpen = useGuideStore(s => s.setOpen);
   const user = useAuthStore(s => s.user);
+  const [isDark, setIsDark] = useState(
+    () => (localStorage.getItem('tt-theme') || 'light') === 'dark'
+  );
+  useEffect(() => {
+    const handler = () => setIsDark((localStorage.getItem('tt-theme') || 'light') === 'dark');
+    window.addEventListener('tt-theme-change', handler);
+    return () => window.removeEventListener('tt-theme-change', handler);
+  }, []);
 
 
 
@@ -86,12 +95,20 @@ export default function MainPage() {
 
           {/* Right — mascot */}
           <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <img
-              src={`${import.meta.env.BASE_URL}assets/mascot-light.png`}
-              alt="뚝딱 마스코트"
-              className="mascot"
-              style={{ width: 210, height: 'auto' }}
-            />
+            <div style={{
+              width: 'min(360px, 100%)', aspectRatio: '1/1',
+              borderRadius: 32, background: 'var(--surface)',
+              border: '1.5px solid var(--border)',
+              boxShadow: 'var(--shadow-card)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <img
+                src={`${import.meta.env.BASE_URL}assets/${isDark ? 'mascot-dark' : 'mascot-light'}.png`}
+                alt="뚝딱 마스코트"
+                className="mascot"
+                style={{ width: '65%', height: 'auto' }}
+              />
+            </div>
           </div>
         </div>
       </section>
