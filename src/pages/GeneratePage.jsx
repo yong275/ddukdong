@@ -426,11 +426,11 @@ export default function GeneratePage() {
   const handleNext = async () => {
     if (step < 2) { setStep(s => s + 1); return; }
 
-    // 비로그인: 데모 모드로 샘플 동화 보여주기
+    // 비로그인: 선택한 그림체에 해당하는 샘플 동화 보여주기
     if (!user) {
+      const DEMO_BY_STYLE = { fairytale: 's1', watercolor: 's2', cartoon: 's4', animation: 's5' };
       sessionStorage.setItem('demo_mode', 'true');
-      const randomSample = SAMPLE_BOOKS[Math.floor(Math.random() * SAMPLE_BOOKS.length)];
-      sessionStorage.setItem('demo_pick', randomSample.id);
+      sessionStorage.setItem('demo_pick', DEMO_BY_STYLE[store.artStyle] ?? 's1');
       navigate('/story-check');
       return;
     }

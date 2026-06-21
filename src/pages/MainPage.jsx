@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import useGuideStore from '../store/guideStore';
+import useAuthStore from '../store/authStore';
 import { Sparkle, UserCirclePlus, SlidersHorizontal, PaintBrushBroad } from '@phosphor-icons/react';
 
 import Footer from '../components/layout/Footer';
@@ -30,6 +31,7 @@ const FEATURES = [
 export default function MainPage() {
   const navigate = useNavigate();
   const setGuideOpen = useGuideStore(s => s.setOpen);
+  const user = useAuthStore(s => s.user);
 
 
 
@@ -64,7 +66,7 @@ export default function MainPage() {
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--primary)'}
               >
-                동화 만들기
+                {user ? '동화 만들기' : '동화만들기 체험하기'}
               </button>
               <button
                 onClick={() => setGuideOpen(true)}
@@ -169,7 +171,7 @@ export default function MainPage() {
               cursor: 'pointer',
             }}
           >
-            동화 만들기
+            {user ? '동화 만들기' : '동화만들기 체험하기'}
           </button>
         </div>
       </section>

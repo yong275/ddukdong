@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Books, Plus, Trash, PencilSimple, WarningCircle, SpinnerGap } from '@phosphor-icons/react';
 import axios from '../api/axios';
 import { SAMPLE_BOOKS } from '../utils/constants';
+import useAuthStore from '../store/authStore';
 import Illo from '../components/illustrations/Illo';
 
 /* ── 날짜 포맷 ─────────────────────────────────── */
@@ -95,6 +96,7 @@ function BookCard({ story, editMode, onDelete, onClick }) {
 /* ── 메인 컴포넌트 ─────────────────────────────── */
 export default function LibraryPage() {
   const navigate = useNavigate();
+  const user = useAuthStore(s => s.user);
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -106,9 +108,9 @@ export default function LibraryPage() {
     try {
       const res = await axios.get('/v1/stories');
       const list = res.data?.stories || res.data || [];
-      setStories(list.length > 0 ? list : SAMPLE_BOOKS);
+      setStories(list.length > 0 ? list : (user ? [] : SAMPLE_BOOKS));
     } catch (e) {
-      setStories(SAMPLE_BOOKS);
+      setStories(user ? [] : SAMPLE_BOOKS);
     } finally {
       setLoading(false);
     }

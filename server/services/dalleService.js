@@ -80,6 +80,7 @@ export async function generateCoverImage(story_id, title, art_style_en, characte
       prompt,
       n: 1,
       size: '1024x1024',
+      quality: 'medium',
     });
 
     const b64 = response.data[0].b64_json;
@@ -108,6 +109,7 @@ export async function generateAndSaveImage(page_id, story_id, imagePrompt) {
       prompt: imagePrompt,
       n: 1,
       size: '1024x1024',
+      quality: 'medium',
     });
 
     const b64 = response.data[0].b64_json;

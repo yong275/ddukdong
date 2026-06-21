@@ -37,10 +37,33 @@ Create one English image prompt for each story page. Target age: 만 4-6세.
 7. TAG: "consistent art style, same character design throughout the picture book"
 
 [Art style keywords]
-- 심플동화: simple children's book illustration, flat design, clean outlines, warm muted colors
-- 수채화: watercolor style, soft edges, pastel tones, gentle brush strokes
-- 종이공예: paper craft style, layered paper cutout, 3D paper art, soft drop shadows
-- 색연필: colored pencil style, hand-drawn texture, soft hatching, warm tones
+- 심플동화:
+  Modern Flat Storybook Illustration, simple 2D flat design, clean rounded shapes,
+  flat colors, minimal shading, very subtle texture,
+  consistent character design, consistent illustration style, children's picture book style,
+  no watercolor, no painterly effect, no brush strokes,
+  no realistic rendering, no 3D, no detailed texture,
+  no text, no logo, no watermark.
+- 수채화:
+  Soft storybook watercolor, consistent character design, consistent illustration style,
+  natural watercolor bleeding, cold press paper texture, soft pastel palette,
+  warm and dreamy atmosphere, hand-painted illustration, delicate brush strokes,
+  storybook aesthetic, cozy whimsical mood,
+  no text, no logo, no watermark.
+- 종이공예:
+  Soft layered paper cut storybook, consistent character design, consistent illustration style,
+  handcrafted paper craft aesthetic, stacked paper layers, rounded cut paper shapes,
+  soft paper shadows, subtle paper texture, warm pastel palette,
+  cozy and whimsical atmosphere, friendly and adorable style, gentle lighting,
+  modern children's book aesthetic, clean and simple composition, premium handcrafted feel,
+  no text, no logo, no watermark.
+- 색연필:
+  Soft colored pencil storybook illustration, consistent character design, consistent illustration style,
+  delicate colored pencil strokes, visible pencil texture, layered color shading,
+  natural paper grain, warm pastel color palette, soft and cozy atmosphere, gentle lighting,
+  cute and friendly aesthetic, hand-drawn illustration feel, modern children's book style,
+  balanced composition, subtle sketch details, whimsical and heartwarming mood,
+  no text, no logo, no watermark.
 
 [Setting mood keywords]
 - 학교: bright classroom or school yard, sunny day, cheerful atmosphere

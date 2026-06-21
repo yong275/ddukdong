@@ -49,7 +49,7 @@ export default function App() {
             <Route path="/guide" element={<GuidePage />} />
             <Route path="/create" element={<GeneratePage />} />
             <Route path="/story-check" element={<StoryCheckPage />} />
-            <Route path="/loading" element={<ProtectedRoute><LoadingPage /></ProtectedRoute>} />
+            <Route path="/loading" element={<LoadingPage />} />
             <Route path="/library" element={<LibraryPage />} />
             <Route path="/viewer/:story_id" element={<ViewerPage />} />
             <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />

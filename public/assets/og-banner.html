@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    background: #fdfbf9;
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+    display: flex; align-items: center;
+  }
+  .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff8de;
+  }
+  .c1 { width: 520px; height: 520px; top: -140px; right: -80px; }
+  .c2 { width: 260px; height: 260px; bottom: -80px; right: 180px; background: #ffdb4d33; }
+  .c3 { width: 120px; height: 120px; top: 60px; left: 360px; background: #ffdb4d22; }
+  .left {
+    flex: 0 0 420px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+    position: relative; z-index: 1;
+  }
+  .left img { width: 300px; height: 300px; object-fit: contain; }
+  .right {
+    flex: 1;
+    padding: 0 60px 0 20px;
+    position: relative; z-index: 1;
+  }
+  .badge {
+    display: inline-block;
+    background: #ffdb4d;
+    color: #5c4033;
+    font-size: 22px; font-weight: 700;
+    padding: 8px 22px;
+    border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  h1 {
+    font-size: 72px; font-weight: 900;
+    color: #5c4033;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+  }
+  p {
+    font-size: 30px; font-weight: 400;
+    color: #8b6a5a;
+    line-height: 1.5;
+  }
+  .dots {
+    margin-top: 40px;
+    display: flex; gap: 10px;
+  }
+  .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ffdb4d;
+  }
+  .dot:nth-child(2) { background: #efe3bf; }
+  .dot:nth-child(3) { background: #efe3bf; }
+</style>
+</head>
+<body>
+  <div class="bg-circle c1"></div>
+  <div class="bg-circle c2"></div>
+  <div class="bg-circle c3"></div>
+
+  <div class="left">
+    <img src="mascot-light.png" />
+  </div>
+  <div class="right">
+    <div class="badge">AI 맞춤 동화</div>
+    <h1>뚝딱동화</h1>
+    <p>아이가 주인공이 되는<br>나만의 그림동화를 뚝딱!</p>
+    <div class="dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+</body>
+</html>
